@@ -5,6 +5,12 @@ return {
         lazy = true,
     },
 
+    -- Trouble
+    {
+        "folke/trouble.nvim",
+        dependencies = {"nvim-tree/nvim-web-devicons"},
+    },
+
     -- Vim-Tmux Navigator
     {
         "christoomey/vim-tmux-navigator",
@@ -46,6 +52,14 @@ return {
         dependencies = {
             'nvim-tree/nvim-web-devicons',
         }
+    },
+
+    -- Harpoon
+    {
+        'ThePrimeagen/harpoon',
+        dependencies = {
+            'nvim-lua/plenary.nvim',
+        },
     },
 
     -- Telescope (Fuzzy Finder)

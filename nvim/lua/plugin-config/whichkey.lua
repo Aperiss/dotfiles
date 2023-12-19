@@ -86,8 +86,8 @@ local mappings = {
     ["w"] = { "<cmd>w!<CR>", "Save" }, -- Save current file
     ["r"] = { "<cmd>lua vim.lsp.buf.format{async=true}<cr>", "Reformat Code" },
     ["m"] = { "<cmd>Mason<cr>", "Mason UI for Lsp" },
-    ["e"] = {"<cmd>NvimTreeToggle<cr>", "Explorer" }, -- File Explorer
-    ["u"] = {"<cmd>lua require('undotree').toggle()<CR>", "Undo-Tree"},
+    ["e"] = { "<cmd>NvimTreeToggle<cr>", "Explorer" }, -- File Explorer
+    ["u"] = { "<cmd>lua require('undotree').toggle()<CR>", "Undo-Tree"},
 
     -- Telescope
     f = {
@@ -107,6 +107,14 @@ local mappings = {
         c = { "<cmd>Telescope commands<cr>", "Commands" },
     },
 
+    -- Harpoon
+    h = {
+        name = "Harpoon",
+        h = { "<cmd>lua require('harpoon.ui).toggle_quick_menu()<cr>" ,"Open Menu"},
+        m = { "<cmd>lua require('harpoon.mark').add_file()<cr>", "Add File"},
+        r = { "<cmd>lua require('harpoon.mark').rm_file()<cr>", "Remove File"},
+    },
+
     l = {
         name = "LSP",
         a = { "<cmd>lua vim.lsp.buf.code_action()<cr>", "Code Action" },
@@ -118,6 +126,16 @@ local mappings = {
             "<cmd>Telescope lsp_dynamic_workspace_symbols<cr>",
             "Workspace Symbols",
         },
+    },
+
+    -- Trouble
+    x = {
+        name = "Trouble",
+        x = { "<cmd>TroubleToggle<cr>", "Toggle Menu"},
+        w = { "<cmd>TroubleToggle workspace_diagnostics<cr>", "Workspace Diagnostics"},
+        d = { "<cmd>TroubleToggle document_diagnostics<cr>", "Document Diagnostics"},
+        q = { "<cmd>TroubleToggle quickfix<cr>", "Quick Fix"},
+        l = { "<cmd>TroubleToggle loclist<cr>", "Loclist"},
     },
 }
 
