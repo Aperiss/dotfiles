@@ -3,8 +3,8 @@
 local lsp = require('lsp-zero')
 lsp.preset('recommended')
 
--- (Optional) Configure lua language server for neovim
 lsp.nvim_workspace()
+local rust_lsp = lsp.build_options('rust_analyzer', {})
 
 lsp.setup()
 

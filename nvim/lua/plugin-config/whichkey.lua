@@ -117,6 +117,14 @@ local mappings = {
         c = { "<cmd>Telescope commands<cr>", "Commands" },
     },
 
+    -- Harpoon
+    h = {
+        name = "Harpoon",
+        h = { "<cmd>lua require('harpoon').ui:toggle_quick_menu(require('harpoon'):list())<cr>" ,"Open Menu"},
+        m = { "<cmd>lua require('harpoon'):list():append()<cr>", "Add File"},
+        r = { "<cmd>lua require('harpoon'):list():remove()<cr>", "Remove File"},
+    },
+
     l = {
         name = "LSP",
         a = { "<cmd>lua vim.lsp.buf.code_action()<cr>", "Code Action" },

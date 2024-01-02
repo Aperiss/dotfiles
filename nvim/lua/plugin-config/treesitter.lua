@@ -2,14 +2,11 @@
 local configs = require("nvim-treesitter.configs")
 configs.setup {
   -- Add a language of your choice
-  ensure_installed = {"cpp", "c", "cmake", "python", "rust", "go", "lua", "latex"},
+  ensure_installed = {"cpp", "c", "cmake", "python", "rust", "toml", "go", "lua", "latex"},
   sync_install = false,
-  ignore_install = { "" }, -- List of parsers to ignore installing
   highlight = {
     enable = true, -- false will disable the whole extension
-    disable = { "" }, -- list of language that will be disabled
     additional_vim_regex_highlighting = true,
-
   },
   indent = { enable = true, disable = { "yaml" } },
   rainbow = {
@@ -21,3 +18,6 @@ configs.setup {
     -- termcolors = {} -- table of colour name strings
   }
 }
+
+vim.wo.foldmethod = 'expr'
+vim.wo.foldexpr = 'nvim_treesitter#foldexpr()'
