@@ -100,14 +100,6 @@ local mappings = {
         r = { "<cmd>Telescope oldfiles<cr>", "Open Recent File" },
     },
 
-    -- Harpoon
-    h = {
-        name = "Harpoon",
-        h = {"<cmd>lua require('harpoon').ui:toggle_quick_menu(require('harpoon'):list())<cr>", "Open Menu"},
-        m = {"<cmd>lua require('harpoon'):list():append()<cr>", "Add File"},
-        r = {"<cmd>lua require('harpoon'):list():remove()<cr>", "Remove File"},
-    },
-
     s = {
         name = "Search",
         h = { "<cmd>Telescope help_tags<cr>", "Find Help" },
@@ -138,9 +130,9 @@ local mappings = {
         },
     },
 
-    x = {
+    t = {
         name = "Errors",
-        x = { "<cmd>TroubleToggle<cr>", "Toggle Trouble Menu" },
+        t = { "<cmd>TroubleToggle<cr>", "Toggle Trouble Menu" },
         w = { "<cmd>TroubleToggle wordkpace_diagnostics<cr>", "Workspace Diagnostics"},
         d = { "<cmd>TroubleToggle document_diagnostics<cr>", "Document Diagnostics"},
         q = { "<cmd>TroubleToggle quickfix<cr>", "Quick Fix"},

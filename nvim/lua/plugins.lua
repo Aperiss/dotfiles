@@ -7,8 +7,8 @@ return {
 
     -- Trouble NVIM
     {
-     "folke/trouble.nvim",
-     dependencies = { "nvim-tree/nvim-web-devicons" },
+        "folke/trouble.nvim",
+        dependencies = { "nvim-tree/nvim-web-devicons" },
     },
 
     -- Vim-Tmux Navigator
@@ -35,16 +35,6 @@ return {
         name = "catppuccin",
         priority = 1000
     },
-
-    ---- Better Indentation
-    ---- Indentation Highlights
-    --{
-    --    "lukas-reineke/indent-blankline.nvim",
-    --},
-    ---- Rainbow Highlights
-    --{
-    --    "HiPhish/nvim-ts-rainbow2",
-    --},
 
     -- Lualine
     {
@@ -115,6 +105,7 @@ return {
             {'rafamadriz/friendly-snippets'},
         }
     },
+
     -- Copilot
     {
         'zbirenbaum/copilot.lua',
@@ -125,5 +116,4 @@ return {
     {
         'zbirenbaum/copilot-cmp',
     },
-
 }
