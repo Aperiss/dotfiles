@@ -39,7 +39,9 @@ local setup = {
         group = "+", -- symbol prepended to a group
     },
     popup_mappings = {
+        lazy = false,
         scroll_down = "<c-d>", -- binding to scroll down inside the popup
+        lazy = false,
         scroll_up = "<c-u>", -- binding to scroll up inside the popup
     },
     window = {
@@ -86,8 +88,8 @@ local mappings = {
     ["w"] = { "<cmd>w!<CR>", "Save" }, -- Save current file
     ["r"] = { "<cmd>lua vim.lsp.buf.format{async=true}<cr>", "Reformat Code" },
     ["m"] = { "<cmd>Mason<cr>", "Mason UI for Lsp" },
-    ["e"] = { "<cmd>NvimTreeToggle<cr>", "Explorer" }, -- File Explorer
-    ["u"] = { "<cmd>lua require('undotree').toggle()<CR>", "Undo-Tree"},
+    ["e"] = {"<cmd>NvimTreeToggle<cr>", "Explorer" }, -- File Explorer
+    ["u"] = {"<cmd>lua require('undotree').toggle()<CR>", "Undo-Tree"},
 
     -- Telescope
     f = {
@@ -98,6 +100,14 @@ local mappings = {
         r = { "<cmd>Telescope oldfiles<cr>", "Open Recent File" },
     },
 
+    -- Harpoon
+    h = {
+        name = "Harpoon",
+        h = {"<cmd>lua require('harpoon').ui:toggle_quick_menu(require('harpoon'):list())<cr>", "Open Menu"},
+        m = {"<cmd>lua require('harpoon'):list():append()<cr>", "Add File"},
+        r = {"<cmd>lua require('harpoon'):list():remove()<cr>", "Remove File"},
+    },
+
     s = {
         name = "Search",
         h = { "<cmd>Telescope help_tags<cr>", "Find Help" },
@@ -105,14 +115,6 @@ local mappings = {
         r = { "<cmd>Telescope registers<cr>", "Registers" },
         k = { "<cmd>Telescope keymaps<cr>", "Keymaps" },
         c = { "<cmd>Telescope commands<cr>", "Commands" },
-    },
-
-    -- Harpoon
-    h = {
-        name = "Harpoon",
-        h = { "<cmd>lua require('harpoon.ui).toggle_quick_menu()<cr>" ,"Open Menu"},
-        m = { "<cmd>lua require('harpoon.mark').add_file()<cr>", "Add File"},
-        r = { "<cmd>lua require('harpoon.mark').rm_file()<cr>", "Remove File"},
     },
 
     l = {
@@ -128,11 +130,10 @@ local mappings = {
         },
     },
 
-    -- Trouble
     x = {
-        name = "Trouble",
-        x = { "<cmd>TroubleToggle<cr>", "Toggle Menu"},
-        w = { "<cmd>TroubleToggle workspace_diagnostics<cr>", "Workspace Diagnostics"},
+        name = "Errors",
+        x = { "<cmd>TroubleToggle<cr>", "Toggle Trouble Menu" },
+        w = { "<cmd>TroubleToggle wordkpace_diagnostics<cr>", "Workspace Diagnostics"},
         d = { "<cmd>TroubleToggle document_diagnostics<cr>", "Document Diagnostics"},
         q = { "<cmd>TroubleToggle quickfix<cr>", "Quick Fix"},
         l = { "<cmd>TroubleToggle loclist<cr>", "Loclist"},
@@ -141,3 +142,4 @@ local mappings = {
 
 which_key.setup(setup)
 which_key.register(mappings, opts)
+
