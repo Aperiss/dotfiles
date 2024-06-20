@@ -39,7 +39,8 @@ option.colorcolumn = "101"
 option.foldenable = false
 option.completeopt = { 'menuone', 'noselect', 'noinsert' }
 option.shortmess = option.shortmess + { c = true }
-vim.api.nvim_set_option('updatetime', 300)
+option.conceallevel = 1
+-- vim.api.nvim_set_option('updatetime', 300)
 
 vim.cmd([[
 set signcolumn=yes
