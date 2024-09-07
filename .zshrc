@@ -1,5 +1,6 @@
 # Shell integrations
 eval "$(/opt/homebrew/bin/brew shellenv)"
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 eval "$(starship init zsh)"
 eval "$(fzf --zsh)"
 eval "$(zoxide init --cmd cd zsh)"
@@ -52,14 +53,24 @@ setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
 
+# Aliases
+alias ls='eza --oneline --color=always --icons=always'
+alias la='eza --oneline --all --color=always --icons=always'
+alias li='eza --oneline --all --git-ignore --color=always --icons=always'
+alias l.='ls -d .*'
+
+alias lt='eza --tree --color=always --icons=always'
+
+alias ll='eza --all --header --long --no-time --color=always --icons=always'
+alias lli='eza --all --header --long --no-time --git-ignore --color=always --icons=always'
+
+alias llm='eza --all --header --long --reverse --sort=modified --color=always --icons=always'
+alias llmi='eza --all --header --long --git-ignore --reverse --sort=modified --color=always --icons=always'
+
 # Completion styling 
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' menu no
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --oneline --all --color=always --icons=always $realpath'
 
-# Aliases
-alias ls='ls --color=auto'
-alias ll='ls -la'
-alias l.='ls -d .*'
 
