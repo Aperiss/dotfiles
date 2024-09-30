@@ -1,4 +1,5 @@
 #!/bin/zsh
+tmux_config_path=~/.config/tmux/tmux.conf
 
 # Check if we're inside a tmux sesison
 if [[ -z "$TMUX" ]]; then
@@ -7,7 +8,7 @@ if [[ -z "$TMUX" ]]; then
 
     case ${#tmux_sessions[@]} in
         0)
-            tmux new-session -d -s base
+            tmux -f $tmux_config_path new-session -d -s base
             tmux attach-session -t base
             ;;
         1)
