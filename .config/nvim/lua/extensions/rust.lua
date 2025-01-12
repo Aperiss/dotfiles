@@ -132,7 +132,6 @@ return {
                             cwd = "${workspaceFolder}",
                             stopOnEntry = false,
                         },
-
                     }
                     dap.configurations.c = dap.configurations.cpp
                     dap.configurations.rust = dap.configurations.cpp
@@ -150,6 +149,13 @@ return {
                 lc = {
                     name = "+Crates",
                     p = { "Show Popup" },
+                    y = { "Open Repository" },
+                    i = { "Show Crate Popup" },
+                    f = { "Show Features Popup" },
+                    d = { "Show Dependencies Popup" },
+                    v = { "Show Versions Popup" },
+                    u = { "Update Crate" },
+                    U = { "Upgrade Crate" },
                 },
             },
         },
