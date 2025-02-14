@@ -1,4 +1,4 @@
-if not require("settings").extensions.cpp then
+if not require("settings").extensions.zig then
     return {}
 end
 
@@ -15,22 +15,13 @@ return {
     {
         "nvim-treesitter/nvim-treesitter",
         opts = function(_, opts)
-            vim.list_extend(opts.ensure_installed, { "c", "cpp" })
+            vim.list_extend(opts.ensure_installed, { "zig" })
         end,
     },
-
     {
         "williamboman/mason.nvim",
         opts = function(_, opts)
-            vim.list_extend(opts.ensure_installed, { "codelldb" })
-        end,
-    },
-
-    {
-        "nvimtools/none-ls.nvim",
-        opts = function(_, opts)
-            local nls = require "null-ls"
-            table.insert(opts.sources, nls.builtins.formatting.clang_format)
+            vim.list_extend(opts.ensure_installed, { "zls", "codelldb" })
         end,
     },
 
@@ -38,11 +29,10 @@ return {
         "neovim/nvim-lspconfig",
         opts = {
             servers = {
-                clangd = {},
+                zls = {},
             },
         },
     },
-
     {
         "mfussenegger/nvim-dap",
         opts = {
@@ -58,7 +48,7 @@ return {
                             args = { "--port", "${port}" },
                         },
                     }
-                    dap.configurations.cpp = {
+                    dap.configurations.zig = {
                         {
                             name = "Launch file",
                             type = "codelldb",
@@ -69,11 +59,10 @@ return {
                             cwd = "${workspaceFolder}",
                             stopOnEntry = false,
                         },
-
                     }
-                    dap.configurations.c = dap.configurations.cpp
                 end,
             },
         },
     },
 }
+

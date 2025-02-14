@@ -121,7 +121,7 @@ return {
                             args = { "--port", "${port}" },
                         },
                     }
-                    dap.configurations.cpp = {
+                    dap.configurations.rust = {
                         {
                             name = "Launch file",
                             type = "codelldb",
@@ -133,8 +133,6 @@ return {
                             stopOnEntry = false,
                         },
                     }
-                    dap.configurations.c = dap.configurations.cpp
-                    dap.configurations.rust = dap.configurations.cpp
                 end,
             },
         },
