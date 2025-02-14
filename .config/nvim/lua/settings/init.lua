@@ -6,6 +6,5 @@ return {
         zig = true,
         python = true,
         lua = true,
-        obsidian = true,
     }
 }
