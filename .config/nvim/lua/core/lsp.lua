@@ -49,7 +49,7 @@ return {
                 group = vim.api.nvim_create_augroup('lsp-attach-group', { clear = true }),
                 callback = function(event)
                     local map = function(keys, func, desc)
-                        vim.keymap.set('n', keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
+                        vim.keymap.set('n', keys, func, { buffer = event.buf, desc = desc })
                     end
 
                     map("gd", require('telescope.builtin').lsp_definitions, 'Goto Definition')
@@ -145,45 +145,6 @@ return {
                     nls.builtins.formatting.shfmt,
                 },
             }
-        end,
-    },
-
-    {
-        "folke/which-key.nvim",
-        event = "BufReadPre",
-        opts = {
-            plugins = { spelling = true },
-            mappings = {
-                x = {
-                    name = "+Error",
-                    x = { "Toggle Diagnostics" },
-                    w = { "Workspace Diagnostics" },
-                    d = { "Document Diagnostics" },
-                    q = { "Quick Fix" },
-                },
-                l = {
-                    name = "+LSP",
-                    a = { "Code Action" },
-                    r = { "Rename" },
-                    s = { "Document Symbols" },
-                    S = { "Workspace Symbols" },
-                },
-            },
-        },
-
-        config = function(_, opts)
-            local whichkey = require "which-key"
-
-            local register_settings = {
-                mode = { "n", "v" }, -- NORMAL mode
-                prefix = "<leader>",
-                buffer = nil,        -- Global mappings. Specify a buffer number for buffer local mappings
-                silent = true,       -- use `silent` when creating keymaps
-                noremap = true,      -- use `noremap` when creating keymaps
-                nowait = true,       -- use `nowait` when creating keymaps
-            }
-            whichkey.setup(opts)
-            whichkey.register(opts.mappings, register_settings)
         end,
     },
 }

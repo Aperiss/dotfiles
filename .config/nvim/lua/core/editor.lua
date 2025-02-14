@@ -13,6 +13,10 @@ return {
                     sorter = "filetype"
                 }
             }
+            local whichkey = require("which-key")
+            whichkey.add({
+                { "<leader>e", "<cmd>NvimTreeToggle<cr>", desc = "Nvim Tree", mode = { "n", "v" } },
+            })
         end,
     },
 
@@ -30,7 +34,7 @@ return {
             { "<leader>fr", "<cmd>Telescope oldfiles<cr>",   desc = "Recent" },
             { "<leader>fb", "<cmd>Telescope buffers<cr>",    desc = "Buffers" },
             { "<leader>fg", "<cmd>Telescope git_files<cr>",  desc = "Git Files" },
-          { "<leader>fs", "<cmd>Telescope live_grep<cr>",  desc = "Search" },
+            { "<leader>fs", "<cmd>Telescope live_grep<cr>",  desc = "Search" },
         },
 
         opts = {
@@ -71,42 +75,25 @@ return {
     -- Which Key
     {
         "folke/which-key.nvim",
-        event = "VeryLazy",
         opts = {
-            plugins = { spelling = true },
-            key_labels = { ["<leader>"] = "SPC" },
-            mappings = {
-                ["q"] = { "<cmd>lua require('util').smart_quit()<CR>", "Quit" },
-                ["k"] = { "<cmd>bdelete<cr>", "Kill Buffer" },
-                ["e"] = { "<cmd>NvimTreeToggle<cr>", "Explorer" },
-                ["y"] = { "Yank to clipboard" },
-                ["Y"] = { "Yank line to clipboard" },
-                ["p"] = { "paste from clipboard" },
-                f = {
-                    name = "+Files",
-                    f = { "Find Files" },
-                    r = { "Recent Files" },
-                    b = { "Find Buffers" },
-                    g = { "Git Files" },
-                    s = { "Search in Files" },
-                },
-            },
+            preset = "modern",
+            replace = { ["<leader>"] = "SPC" },
         },
 
         config = function(_, opts)
             local whichkey = require "which-key"
-
-            local register_settings = {
-                mode = { "n", "v" }, -- NORMAL mode
-                prefix = "<leader>",
-                buffer = nil,        -- Global mappings. Specify a buffer number for buffer local mappings
-                silent = true,       -- use `silent` when creating keymaps
-                noremap = true,      -- use `noremap` when creating keymaps
-                nowait = true,       -- use `nowait` when creating keymaps
-            }
-
             whichkey.setup(opts)
-            whichkey.register(opts.mappings, register_settings)
+            whichkey.add({
+                { "<leader>q", "<cmd>lua require('util').smart_quit()<CR>", desc = "Smart Quit", mode = { "n", "v" } },
+                { "<leader>k", "<cmd>bdelete<cr>", desc = "Kill Buffer", mode = { "n", "v" } },
+                { "<leader>y", desc = "Yank to clipboard", mode = { "n", "v" } },
+                { "<leader>Y", desc = "Yank line to clipboard", mode = { "n", "v" } },
+                { "<leader>p", desc = "Paste from clipboard", mode = { "n", "v" } },
+                { "<leader>f", group = "+Files", mode = { "n", "v" } },
+                { "<leader>d", group = "+DAP", mode = { "n", "v" } },
+                { "<leader>l", group = "+LSP", mode = { "n", "v" } },
+                { "<leader>x", group = "+Error", mode = { "n", "v" } },
+            })
         end,
     },
 }

@@ -52,54 +52,7 @@ return {
             for k, _ in pairs(opts.setup) do
                 opts.setup[k](plugin, opts)
             end
-        end,
-    },
 
-    {
-        "folke/which-key.nvim",
-        event = "BufReadPre",
-        opts = {
-            plugins = { spelling = true },
-            mappings = {
-                d = {
-                    name = "+DAP",
-                    C = { "Set Conditional Breakpoint" },
-                    E = { "Evaluate Input" },
-                    R = { "Run to cursor" },
-                    S = { "Scopes" },
-                    U = { "Toggle UI" },
-                    b = { "Set Back" },
-                    c = { "Continue" },
-                    d = { "Disconnect" },
-                    e = { "Evaluate" },
-                    g = { "Get Session" },
-                    h = { "Hover Variables" },
-                    i = { "Step Into" },
-                    o = { "Step Over" },
-                    p = { "Pause" },
-                    q = { "Quit" },
-                    r = { "Toggle REPL" },
-                    s = { "Start" },
-                    t = { "Toggle Breakpoint" },
-                    x = { "Terminate" },
-                    u = { "Step Out" },
-                },
-            },
-        },
-
-        config = function(_, opts)
-            local whichkey = require "which-key"
-
-            local register_settings = {
-                mode = { "n", "v" }, -- NORMAL mode
-                prefix = "<leader>",
-                buffer = nil,        -- Global mappings. Specify a buffer number for buffer local mappings
-                silent = true,       -- use `silent` when creating keymaps
-                noremap = true,      -- use `noremap` when creating keymaps
-                nowait = true,       -- use `nowait` when creating keymaps
-            }
-            whichkey.setup(opts)
-            whichkey.register(opts.mappings, register_settings)
         end,
     },
 }
