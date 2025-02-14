@@ -29,7 +29,7 @@ return {
         "neovim/nvim-lspconfig",
         opts = {
             servers = {
-                ruff_lsp = {},
+                ruff = {},
                 pyright = {
                     settings = {
                         disableOrganizeImports = true,
@@ -46,10 +46,10 @@ return {
             },
 
             setup = {
-                ruff_lsp = function()
+                ruff = function()
                     local lsp_utils = require "util"
                     lsp_utils.on_attach(function(client, bufnr)
-                        if client.name == "ruff_lsp" then
+                        if client.name == "ruff" then
                             client.server_capabilities.hoverProvider = false
                         end
                     end)
@@ -76,8 +76,7 @@ return {
                     end)
                 end,
             },
-        },
-    },
+        }, },
 
     {
         "mfussenegger/nvim-dap",
