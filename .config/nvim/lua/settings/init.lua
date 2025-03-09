@@ -6,5 +6,7 @@ return {
         zig = true,
         python = true,
         lua = true,
+        markdown = true,
+        obsidian = true,
     }
 }
