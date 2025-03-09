@@ -107,6 +107,8 @@ return {
                 { "<leader>d", group = "+DAP", mode = { "n", "v" } },
                 { "<leader>l", group = "+LSP", mode = { "n", "v" } },
                 { "<leader>x", group = "+Error", mode = { "n", "v" } },
+                { "<leader>t", group = "+TextFormat", mode = { "n", "v" } },
+                {"<leader>tw", "<cmd>set wrap!<CR>", desc = "Toggle text wrap", mode = { "n", "v" } },
             })
         end,
     },

@@ -18,7 +18,11 @@ option.shiftwidth = 4
 option.expandtab = true
 
 option.smartindent = true
+
 option.wrap = false
+option.linebreak = true
+option.textwidth = 100
+
 
 option.swapfile = false
 option.backup = false
