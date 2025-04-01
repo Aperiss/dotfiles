@@ -29,21 +29,19 @@ return {
 
     -- Surround
     {
-        "kylechui/nvim-surround",
-        version = "*",
-        event = "VeryLazy",
-        --      Old text                    Command         New text
-        -- --------------------------------------------------------------------------------
-        --     surr*ound_words             ysiw)           (surround_words)
-        --     *make strings               ys$"            "make strings"
-        --     [delete ar*ound me!]        ds]             delete around me!
-        --     remove <b>HTML t*ags</b>    dst             remove HTML tags
-        --     'change quot*es'            cs'"            "change quotes"
-        --     <b>or tag* types</b>        csth1<CR>       <h1>or tag types</h1>
-        --     delete(functi*on calls)     dsf             function calls
-        config = function()
-            require("nvim-surround").setup()
-        end
+        "echasnovski/mini.surround",
+        optional = true,
+        opts = {
+            mappings = {
+                add = "gza",
+                delete = "gzd",
+                find = "gzf",
+                find_left = "gzF",
+                highlight = "gzh",
+                replace = "gzr",
+                update_n_lines = "gzn",
+            },
+        },
     },
 
     -- Better Commenting
@@ -61,6 +59,26 @@ return {
                 pre_hook = require("ts_context_commentstring.integrations.comment_nvim").create_pre_hook(),
             }
             require("Comment").setup(opts)
+        end,
+    },
+
+    -- Leap (Faster navigation)
+    {
+        "ggandor/leap.nvim",
+        enabled = true,
+        keys = {
+            { "s", mode = { "n", "x", "o" }, desc = "Leap Forward to" },
+            { "S", mode = { "n", "x", "o" }, desc = "Leap Backward to" },
+            { "gs", mode = { "n", "x", "o" }, desc = "Leap from Windows" },
+        },
+        config = function(_, opts)
+            local leap = require("leap")
+                for k, v in pairs(opts) do
+                  leap.opts[k] = v
+            end
+            leap.add_default_mappings(true)
+            vim.keymap.del({ "x", "o" }, "x")
+            vim.keymap.del({ "x", "o" }, "X")
         end,
     },
 }
