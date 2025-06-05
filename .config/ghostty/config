@@ -1,0 +1,12 @@
+theme = catppuccin-mocha
+window-subtitle = false
+
+confirm-close-surface = false
+clipboard-paste-protection = false
+unfocused-split-opacity = 1.0
+
+cursor-style = block
+
+shell-integration-features = no-cursor
+macos-titlebar-proxy-icon = hidden
+title = "ghostty"
