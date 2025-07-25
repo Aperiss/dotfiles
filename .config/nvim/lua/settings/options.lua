@@ -2,7 +2,6 @@ local option = vim.opt
 
 vim.g.mapleader = " "
 vim.g.maplocalleader = ","
-
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
@@ -42,9 +41,23 @@ option.foldenable = false
 option.completeopt = { 'menuone', 'noselect', 'noinsert' }
 option.shortmess = option.shortmess + { c = true }
 option.conceallevel = 1
--- vim.api.nvim_set_option('updatetime', 300)
 
-vim.cmd([[
-set signcolumn=yes
-autocmd CursorHold * lua vim.diagnostic.open_float(nil, { focusable = false })
+option.laststatus = 3
+option.showmode   = false
+option.cmdheight  = 0
+option.showcmd    = false
+option.ruler      = false
+
+vim.api.nvim_create_autocmd('CmdlineEnter', {
+  callback = function() vim.opt.cmdheight = 1 end,
+})
+vim.api.nvim_create_autocmd('CmdlineLeave', {
+  callback = function() vim.opt.cmdheight = 0 end,
+})
+
+vim.api.nvim_set_option('updatetime', 300)
+
+vim.cmd ([[
+    set signcolumn=yes
+    autocmd CursorHold * lua vim.diagnostic.open_float(nil, {scope="cursor", focusable = false, close_events = {"CursorMoved", "CursorMovedI", "BufHidden", "InsertCharPre", "WinLeave"}})
 ]])
