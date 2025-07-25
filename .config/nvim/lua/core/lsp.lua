@@ -70,12 +70,6 @@ return {
                     map("<leader>ls", require('telescope.builtin').lsp_document_symbols,    "Document Symbols")
                     map("<leader>lS", require('telescope.builtin').lsp_dynamic_workspace_symbols, "Workspace Symbols")
 
-                    map("<leader>xx", function() require("trouble").toggle() end,                     "Toggle Diagnostics")
-                    map("<leader>xw", function() require("trouble").toggle("workspace_diagnostics") end, "Workspace Diagnostics")
-                    map("<leader>xd", function() require("trouble").toggle("document_diagnostics") end,  "Document Diagnostics")
-                    map("<leader>xq", function() require("trouble").toggle("quickfix") end,             "Quick Fix")
-                    map("<leader>xl", function() require("trouble").toggle("loclist") end,              "Loclist")
-
                     local client = vim.lsp.get_client_by_id(event.data.client_id)
                     if client.server_capabilities.documentHighlightProvider then
                         vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {

@@ -82,8 +82,76 @@ return {
     -- Trouble
     {
         "folke/trouble.nvim",
-        dependencies = { "nvim-tree/nvim-web-devicons" },
-        opts = {},
+        opts = {}, -- for default options, refer to the configuration section for custom setup.
+        cmd = "Trouble",
+        keys = {
+            {
+                "<leader>xx",
+                "<cmd>Trouble diagnostics toggle<cr>",
+                desc = "Diagnostics (Trouble)",
+            },
+            {
+                "<leader>xX",
+                "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
+                desc = "Buffer Diagnostics (Trouble)",
+            },
+            {
+                "<leader>cs",
+                "<cmd>Trouble symbols toggle focus=false<cr>",
+                desc = "Symbols (Trouble)",
+            },
+            {
+                "<leader>cl",
+                "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
+                desc = "LSP Definitions / references / ... (Trouble)",
+            },
+            {
+                "<leader>xL",
+                "<cmd>Trouble loclist toggle<cr>",
+                desc = "Location List (Trouble)",
+            },
+            {
+                "<leader>xQ",
+                "<cmd>Trouble qflist toggle<cr>",
+                desc = "Quickfix List (Trouble)",
+            },
+        },
+    },
+    -- Lualine
+    {
+        'nvim-lualine/lualine.nvim',
+        lazy = false,
+        dependencies = { 'nvim-tree/nvim-web-devicons' },
+        config = function()
+            -- Always show one global statusline
+            vim.opt.laststatus = 3
+            -- Optional: Hide built-in "-- INSERT --" since Lualine shows mode
+            vim.opt.showmode = false
+
+            require('lualine').setup {
+                options = {
+                    icons_enabled        = true,
+                    theme                = 'auto',         -- pick up your colorscheme
+                    component_separators = { '|', '|' },
+                    section_separators   = { '',  '' },
+                    globalstatus         = true,           -- span full width
+                    disabled_filetypes   = {},             -- enable everywhere
+                },
+                sections = {
+                    lualine_a = { 'mode' },
+                    lualine_b = { 'branch', 'diff', 'diagnostics' },
+                    lualine_c = { 'filename' },
+                    lualine_x = { 'encoding', 'fileformat', 'filetype' },
+                    lualine_y = { 'progress' },
+                    lualine_z = { 'location' },
+                },
+                inactive_sections = {
+                    lualine_c = { 'filename' },
+                    lualine_x = { 'location' },
+                },
+                extensions = {},
+            }
+        end,
     },
 
     -- Which Key
