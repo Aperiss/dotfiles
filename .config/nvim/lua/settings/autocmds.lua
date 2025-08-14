@@ -31,3 +31,34 @@ vim.api.nvim_create_autocmd({ "InsertEnter", "WinLeave" }, {
     end
   end,
 })
+
+-- Toggle functions
+function _G.toggle_whitespace()
+    if vim.opt.list:get() then
+        vim.opt.list = false
+        print("Whitespace visualization: OFF")
+    else
+        vim.opt.list = true
+        vim.opt.listchars = {
+            space = '·',
+            tab = '→ ',
+            trail = '•',
+            extends = '▶',
+            precedes = '◀',
+            nbsp = '␣'
+        }
+        print("Whitespace visualization: ON")
+    end
+end
+
+function _G.toggle_line_numbers()
+    if vim.opt.relativenumber:get() then
+        vim.opt.relativenumber = false
+        vim.opt.number = true  -- Ensure absolute numbers are shown
+        print("Line numbers: ABSOLUTE")
+    else
+        vim.opt.relativenumber = true
+        vim.opt.number = true  -- Keep absolute numbers on with relative
+        print("Line numbers: RELATIVE")
+    end
+end

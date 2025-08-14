@@ -177,6 +177,8 @@ return {
                 { "<leader>x", group = "+Error", mode = { "n", "v" } },
                 { "<leader>t", group = "+TextFormat", mode = { "n", "v" } },
                 {"<leader>tw", "<cmd>set wrap!<CR>", desc = "Toggle text wrap", mode = { "n", "v" } },
+                {"<leader>ts", "<cmd>lua toggle_whitespace()<CR>", desc = "Toggle whitespace", mode = { "n", "v" } },
+                {"<leader>tn", "<cmd>lua toggle_line_numbers()<CR>", desc = "Toggle line numbers", mode = { "n", "v" } },
             })
         end,
     },
