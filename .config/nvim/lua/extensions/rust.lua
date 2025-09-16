@@ -2,144 +2,118 @@ if not require("settings").extensions.rust then
     return {}
 end
 
-local whichkey = require("which-key")
-whichkey.add({
-    { "<leader>lc", group = "+Crates", mode = { "n", "v" } }
-})
-
-local function get_codelldb()
-    local mason_registry = require "mason-registry"
-    local codelldb = mason_registry.get_package("codelldb")
-    local extension_path = codelldb:get_install_path() .. "/extension/"
-    local codelldb_path = extension_path .. "adapter/codelldb"
-    local liblldb_path = extension_path .. "lldb/lib/liblldb.so"
-    return codelldb_path, liblldb_path
-end
+local get_codelldb = require("util").get_codelldb
 
 return {
     {
         "nvim-treesitter/nvim-treesitter",
         opts = function(_, opts)
             vim.list_extend(opts.ensure_installed, { "rust", "toml" })
+            return opts
         end,
     },
 
     {
         "williamboman/mason.nvim",
         opts = function(_, opts)
-            vim.list_extend(opts.ensure_installed, { "codelldb" })
+            vim.list_extend(opts.ensure_installed, { "rust-analyzer", "codelldb" })
+            return opts
         end,
     },
 
     {
         "neovim/nvim-lspconfig",
-        opts = {
-            servers = {
-                rust_analyzer = {
-                    settings = {
-                        ["rust-analyzer"] = {
-                            cargo = { allFeatures = true },
-                            checkOnSave = {
-                                command = "cargo clippy",
-                                extraArgs = { "--no-deps" },
-                            },
-                        },
+        ft = "rust",
+        opts = function(_, opts)
+            opts.servers = opts.servers or {}
+            opts.servers.rust_analyzer = {
+                settings = {
+                    ["rust-analyzer"] = {
+                        cargo      = { allFeatures = true },
+                        checkOnSave = { command = "clippy", extraArgs = { "--no-deps" } },
                     },
                 },
-            },
-            setup = {
-                rust_analyzer = function(_, opts)
-                    local lsp_utils = require "util"
-                    lsp_utils.on_attach(function(client, bufnr)
-                        local map = function(mode, lhs, rhs, desc)
-                            if desc then
-                                desc = desc
-                            end
-                            vim.keymap.set(
-                                mode, lhs, rhs, { silent = true, desc = desc, buffer = bufnr, noremap = true })
-                        end
-
-                        --stylua: ignore
-                        if client.name == "rust_analyzer" then
-                            map("n", "<leader>ll", function() vim.lsp.codelens.run() end, "Code Lens")
-                        end
-                    end)
-
-                    vim.api.nvim_create_autocmd({ "BufEnter" }, {
-                        pattern = { "Cargo.toml" },
-                        callback = function(event)
-                            local bufnr = event.buf
-
-                            local map = function(mode, lhs, rhs, desc)
-                                if desc then
-                                    desc = desc
-                                end
-                                vim.keymap.set(
-                                    mode, lhs, rhs, { silent = true, desc = desc, buffer = bufnr, noremap = true })
-                            end
-                            map("n", "<leader>lcy", "<cmd> lua require'crates'.open_repository()<cr>", "Open Repository")
-                            map("n", "<leader>lcp", "<cmd> lua require'crates'.show_popup()<cr>", "Show Popup")
-                            map("n", "<leader>lci", "<cmd> lua require'crates'.show_crate_popup()<cr>", "Show Info")
-                            map("n", "<leader>lcf", "<cmd> lua require'crates'.show_features_popup()<cr>", "Show Features")
-                            map("n", "<leader>lcd", "<cmd> lua require'crates'.show_dependencies_popup()<cr>", "Show Dependencies")
-                            map("n", "<leader>lcv", "<cmd> lua require'crates'.show_versions_popup()<cr>", "Show Versions")
-                            map("n", "<leader>lcu", "<cmd> lua require'crates'.update_crate()<cr>", "Update Crate")
-                            map("n", "<leader>lcU", "<cmd> lua require'crates'.upgrade_crate()<cr>", "Upgrade Crate")
-                        end,
-                    })
-
+                on_attach = function(client, bufnr)
+                    if client.name == "rust_analyzer" then
+                        vim.keymap.set("n", "<leader>ll", vim.lsp.codelens.run, { buffer = bufnr, desc = "Run CodeLens" })
+                    end
                 end,
-            },
-        },
-    },
-
-    {
-        "saecki/crates.nvim",
-        event = { "BufRead Cargo.toml" },
-        opts = {
-            null_ls = {
-                enabled = true,
-                name = "crates.nvim",
-            },
-            popup = {
-                border = "rounded",
-                autofocus = true,
-            },
-        },
-        config = function(_, opts)
-            require("crates").setup(opts)
+            }
+            return opts
         end,
     },
 
     {
-        "mfussenegger/nvim-dap",
+        "saecki/crates.nvim",
+        event = "BufRead Cargo.toml",
+        ft = "rust",
         opts = {
-            setup = {
-                codelldb = function()
-                    local codelldb_path, _ = get_codelldb()
-                    local dap = require "dap"
-                    dap.adapters.codelldb = {
-                        type = "server",
-                        port = "${port}",
-                        executable = {
-                            command = codelldb_path,
-                            args = { "--port", "${port}" },
-                        },
-                    }
-                    dap.configurations.rust = {
-                        {
-                            name = "Launch file",
-                            type = "codelldb",
-                            request = "launch",
-                            program = function()
-                                return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
-                            end,
-                            cwd = "${workspaceFolder}",
-                            stopOnEntry = false,
-                        },
-                    }
-                end,
-            },
+            null_ls = { enabled = true, name = "crates.nvim" },
+            popup   = { border = "rounded", autofocus = true },
         },
+        config = function(_, opts)
+            require("crates").setup(opts)
+            vim.api.nvim_create_autocmd("BufEnter", {
+                pattern = "*/Cargo.toml",
+                callback = function(ev)
+                    local buf    = ev.buf
+                    local crates = require("crates")
+                    local map    = function(lhs, rhs, desc)
+                        vim.keymap.set("n", lhs, rhs, { buffer = buf, desc = desc, silent = true })
+                    end
+                    map("<leader>lcy", crates.open_repository,         "Open Repository")
+                    map("<leader>lcp", crates.show_popup,              "Crates Popup")
+                    map("<leader>lci", crates.show_crate_popup,        "Show Info")
+                    map("<leader>lcf", crates.show_features_popup,     "Show Features")
+                    map("<leader>lcd", crates.show_dependencies_popup, "Show Dependencies")
+                    map("<leader>lcv", crates.show_versions_popup,     "Show Versions")
+                    map("<leader>lcu", crates.update_crate,            "Crate Update")
+                    map("<leader>lcU", crates.upgrade_crate,           "Crate Upgrade")
+                end,
+            })
+        end,
+    },
+    {
+        "mfussenegger/nvim-dap",
+        ft = "rust",
+        opts = function(_, opts)
+            opts.setup = opts.setup or {}
+            table.insert(opts.setup, function(dap)
+                -- Rust DAP adapter and configuration
+                local adapter, lib = get_codelldb()
+                if not adapter then
+                    vim.notify("[DAP][Rust] CodeLLDB adapter not found", vim.log.levels.ERROR)
+                    return
+                end
+                dap.adapters.codelldb = {
+                    type       = "server",
+                    port       = "${port}",
+                    executable = {
+                        command = adapter,
+                        args    = { "--port", "${port}" },
+                    },
+                }
+
+                local cwd = vim.fn.getcwd()
+                dap.configurations.rust = {
+                    {
+                        name        = "Launch Rust executable",
+                        type        = "codelldb",
+                        request     = "launch",
+                        program     = function()
+                            local pkg     = vim.fn.fnamemodify(cwd, ":t")
+                            local default = cwd .. "/target/debug/" .. pkg
+                            if vim.fn.filereadable(default) == 1 then
+                                return default
+                            end
+                            return vim.fn.input("Path to executable: ", default, "file")
+                        end,
+                        cwd         = cwd,
+                        stopOnEntry = false,
+                    },
+                }
+            end)
+            return opts
+        end,
     },
 }
