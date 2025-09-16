@@ -1,4 +1,5 @@
-theme = catppuccin-mocha
+theme = Catppuccin Mocha
+font-family = IosevkaNerdFont
 window-subtitle = false
 
 confirm-close-surface = false
@@ -6,7 +7,15 @@ clipboard-paste-protection = false
 unfocused-split-opacity = 1.0
 
 cursor-style = block
+cursor-style-blink = false
+cursor-invert-fg-bg = true
 
 shell-integration-features = no-cursor
 macos-titlebar-proxy-icon = hidden
+macos-option-as-alt = left
 title = "ghostty"
+
+window-width = 150
+window-height = 50
+window-position-x = 1920
+window-position-y = 225
