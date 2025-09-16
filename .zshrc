@@ -72,4 +72,11 @@ zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' menu no
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --oneline --all --color=always --icons=always $realpath'
 
+export UE4_ROOT="$HOME/dev/UE4"
+export CARLA_UNREAL_ENGINE_PATH="$HOME/dev/UE5"
 
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+export NUREC_IMAGE="docker.io/carlasimulator/nvidia-nurec-grpc:0.2.0"
