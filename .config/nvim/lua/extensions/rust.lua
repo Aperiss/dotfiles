@@ -22,6 +22,15 @@ return {
     },
 
     {
+        "stevearc/conform.nvim",
+        opts = function(_, opts)
+            opts.formatters_by_ft = opts.formatters_by_ft or {}
+            opts.formatters_by_ft.rust = { "rustfmt" }
+            return opts
+        end,
+    },
+
+    {
         "neovim/nvim-lspconfig",
         ft = "rust",
         opts = function(_, opts)
@@ -48,8 +57,7 @@ return {
         event = "BufRead Cargo.toml",
         ft = "rust",
         opts = {
-            null_ls = { enabled = true, name = "crates.nvim" },
-            popup   = { border = "rounded", autofocus = true },
+            popup = { border = "rounded", autofocus = true },
         },
         config = function(_, opts)
             require("crates").setup(opts)

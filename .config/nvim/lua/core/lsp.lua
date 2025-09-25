@@ -65,6 +65,17 @@ return {
 
                     map("<leader>la", vim.lsp.buf.code_action,    "Code Action")
                     map("<leader>lr", vim.lsp.buf.rename,         "Rename")
+                    map("<leader>lf", function()
+                        local success, conform = pcall(require, "conform")
+                        if success then
+                            local formatters = conform.list_formatters(buf)
+                            if #formatters > 0 then
+                                conform.format({ bufnr = buf, timeout_ms = 3000 })
+                                return
+                            end
+                        end
+                        vim.lsp.buf.format({ timeout_ms = 3000 })
+                    end, "Format")
 
                     map("<leader>lD", require('telescope.builtin').lsp_type_definitions,    "Goto Type Definition")
                     map("<leader>ls", require('telescope.builtin').lsp_document_symbols,    "Document Symbols")
@@ -119,22 +130,24 @@ return {
     },
 
     {
-        "nvimtools/none-ls.nvim",
-        event = "BufReadPre",
-        dependencies = { "williamboman/mason.nvim" },
-        opts = function()
-            local nls = require("null-ls")
-            return {
-                root_dir = require("null-ls.utils").root_pattern(
-                    ".null-ls-root", ".neoconf.json", "Makefile", ".git"
-                ),
-                sources = {
-                    nls.builtins.formatting.shfmt,
+        "stevearc/conform.nvim",
+        event = { "BufWritePre" },
+        cmd = { "ConformInfo" },
+        opts = {
+            formatters_by_ft = {
+                sh = { "shfmt" },
+                bash = { "shfmt" },
+            },
+            default_format_opts = {
+                timeout_ms = 3000,
+                async = false,
+                quiet = false,
+            },
+            formatters = {
+                shfmt = {
+                    prepend_args = { "-i", "2" },
                 },
-            }
-        end,
-        config = function(_, opts)
-            require("null-ls").setup(opts)
-        end,
+            },
+        },
     },
 }
