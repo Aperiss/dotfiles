@@ -68,13 +68,10 @@ return {
                     map("<leader>lf", function()
                         local success, conform = pcall(require, "conform")
                         if success then
-                            local formatters = conform.list_formatters(buf)
-                            if #formatters > 0 then
-                                conform.format({ bufnr = buf, timeout_ms = 3000 })
-                                return
-                            end
+                            conform.format({ bufnr = buf, timeout_ms = 3000, lsp_fallback = true })
+                        else
+                            vim.lsp.buf.format({ timeout_ms = 3000 })
                         end
-                        vim.lsp.buf.format({ timeout_ms = 3000 })
                     end, "Format")
 
                     map("<leader>lD", require('telescope.builtin').lsp_type_definitions,    "Goto Type Definition")
