@@ -73,4 +73,14 @@ zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' menu no
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --oneline --all --color=always --icons=always $realpath'
 
+# Add doom emacs to PATH
+export PATH="$PATH:/Users/aperiss/.config/emacs/bin"
 
+# Emacs function to open with files/directories
+emacs() {
+    if [ $# -eq 0 ]; then
+        open -a emacs
+    else
+        open -a emacs "$@"
+    fi
+}

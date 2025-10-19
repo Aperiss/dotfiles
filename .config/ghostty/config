@@ -1,5 +1,6 @@
 theme = Catppuccin Mocha
-font-family = IosevkaNerdFont
+font-family = Terminess Nerd Font Mono
+font-size = 14
 window-subtitle = false
 
 confirm-close-surface = false
