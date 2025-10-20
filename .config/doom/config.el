@@ -8,6 +8,14 @@
 (setq doom-font (font-spec :family "Terminess Nerd Font Mono" :size 14)
       doom-variable-pitch-font (font-spec :family "Terminess Nerd Font Mono" :size 14)
       doom-italic-font (font-spec :family "Terminess Nerd Font Mono" :size 14 :slant 'italic))
+
+;; Set Chinese font for CJK characters
+(defun my/setup-chinese-fonts ()
+  (dolist (charset '(kana han cjk-misc bopomofo))
+    (set-fontset-font t charset (font-spec :family "Noto Sans SC" :size 14))))
+
+;; Apply after font initialization
+(add-hook 'doom-init-ui-hook #'my/setup-chinese-fonts)
 ;; Font:1 ends here
 
 ;; [[file:config.org::*Theme][Theme:1]]
@@ -150,8 +158,9 @@
         lsp-rust-analyzer-import-granularity "module"
         lsp-rust-analyzer-import-prefix "by-self"
 
-        ;; Disable mutable variable underlining
-        lsp-rust-analyzer-highlighting-mutable-underline nil))
+        ;; Semantic highlighting - disable mutable variable underlining
+        lsp-rust-analyzer-highlighting-mutable-underline nil
+        lsp-rust-analyzer-highlighting-mutable-emphasis "none"))
 ;; LSP Configuration:1 ends here
 
 ;; [[file:config.org::*LSP Configuration][LSP Configuration:1]]
