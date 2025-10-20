@@ -293,8 +293,9 @@ Configure rust-analyzer with clippy for enhanced linting, inlay hints, and advan
         lsp-rust-analyzer-import-granularity "module"
         lsp-rust-analyzer-import-prefix "by-self"
 
-        ;; Disable mutable variable underlining
-        lsp-rust-analyzer-highlighting-mutable-underline nil))
+        ;; Semantic highlighting - disable mutable variable underlining
+        lsp-rust-analyzer-highlighting-mutable-underline nil
+        lsp-rust-analyzer-highlighting-mutable-emphasis "none"))
 #+end_src
 
 ** C++
