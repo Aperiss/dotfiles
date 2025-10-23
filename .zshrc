@@ -3,7 +3,8 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 eval "$(starship init zsh)"
 eval "$(fzf --zsh)"
-eval "$(zoxide init --cmd cd zsh)"
+# Initialize zoxide (creates 'z' command for smart jumping)
+eval "$(zoxide init zsh)"
 
 source ~/.config/zsh/scripts/tmux_launcher.sh
 
@@ -75,6 +76,9 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --oneline --all --color=always 
 
 # Add doom emacs to PATH
 export PATH="$PATH:/Users/aperiss/.config/emacs/bin"
+
+# Add LLVM to PATH (for lldb-dap and other tools)
+export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
 
 # Emacs function to open with files/directories
 emacs() {
