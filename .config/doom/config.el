@@ -7,13 +7,13 @@
 
 ;; [[file:config.org::*Font][Font:1]]
 ;; Main font
-(setq doom-font (font-spec :family "Terminess Nerd Font Mono" :size 14))
+(setq doom-font (font-spec :family "Terminess Nerd Font Mono" :size 18.0))
 
 ;; Chinese font for CJK characters
 (add-hook 'doom-init-ui-hook
           (lambda ()
             (dolist (charset '(kana han cjk-misc bopomofo))
-              (set-fontset-font t charset (font-spec :family "Noto Sans SC" :size 14)))))
+              (set-fontset-font t charset (font-spec :family "Noto Sans SC" :size 18.0)))))
 ;; Font:1 ends here
 
 ;; [[file:config.org::*Theme][Theme:1]]
@@ -417,6 +417,30 @@
   :config
   (org-roam-db-autosync-enable))
 ;; Org Roam:1 ends here
+
+;; [[file:config.org::*Org Roam UI][Org Roam UI:1]]
+(use-package! org-roam-ui
+  :after org-roam
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start nil
+        org-roam-ui-custom-theme nil  ; Let it auto-sync from Emacs theme
+        org-roam-ui-browser-function #'browse-url)
+
+  ;; Replace org-roam-graph with org-roam-ui-mode
+  (defalias 'org-roam-graph 'org-roam-ui-mode
+    "Use org-roam-ui instead of default graph"))
+
+;; Override the default graph keybinding - set after org-roam loads
+(after! org-roam
+  ;; Override both the command and the which-key description
+  (map! :leader
+        (:prefix ("n" . "notes")
+         (:prefix ("r" . "roam")
+          :desc "Toggle org-roam-ui" "g" #'org-roam-ui-mode))))
+;; Org Roam UI:1 ends here
 
 ;; [[file:config.org::*Org Headings][Org Headings:1]]
 (custom-theme-set-faces!
