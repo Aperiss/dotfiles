@@ -22,6 +22,21 @@ return {
     },
 
     {
+        "stevearc/conform.nvim",
+        opts = function(_, opts)
+            opts.formatters_by_ft = opts.formatters_by_ft or {}
+            opts.formatters_by_ft.zig = { "zig" }
+            opts.formatters = opts.formatters or {}
+            opts.formatters.zig = {
+                command = "zig",
+                args = { "fmt", "--stdin" },
+                stdin = true,
+            }
+            return opts
+        end,
+    },
+
+    {
         "neovim/nvim-lspconfig", opts = function(_, opts)
             opts.servers = opts.servers or {}
             opts.servers.zls = {}

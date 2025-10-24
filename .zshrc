@@ -2,7 +2,8 @@
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 eval "$(starship init zsh)"
 eval "$(fzf --zsh)"
-eval "$(zoxide init --cmd cd zsh)"
+# Initialize zoxide (creates 'z' command for smart jumping)
+eval "$(zoxide init zsh)"
 
 source ~/.config/zsh/scripts/tmux_launcher.sh
 

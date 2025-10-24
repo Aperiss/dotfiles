@@ -1,0 +1,607 @@
+#+TITLE: Doom Emacs Configuration
+#+AUTHOR: Antonio Peris Sanchez
+#+EMAIL: perissanchezantonio@gmail.com
+#+PROPERTY: header-args:emacs-lisp :tangle yes :comments link
+
+* Table of Contents :TOC:
+- [[#introduction][Introduction]]
+- [[#basic-configuration][Basic Configuration]]
+- [[#ui-configuration][UI Configuration]]
+  - [[#font][Font]]
+  - [[#theme][Theme]]
+  - [[#line-numbers][Line Numbers]]
+- [[#editor-settings][Editor Settings]]
+  - [[#scroll-offset][Scroll Offset]]
+- [[#keybindings][Keybindings]]
+  - [[#window-splits][Window Splits]]
+  - [[#motion-and-scrolling][Motion and Scrolling]]
+  - [[#editing][Editing]]
+  - [[#toggles][Toggles]]
+- [[#environment-setup][Environment Setup]]
+- [[#debugger-setup][Debugger Setup]]
+- [[#programming-languages-configurations][Programming Languages Configurations]]
+  - [[#rust][Rust]]
+  - [[#c][C++]]
+  - [[#c-1][C]]
+  - [[#zig][Zig]]
+  - [[#go][Go]]
+  - [[#python][Python]]
+  - [[#lua][Lua]]
+- [[#org-mode][Org Mode]]
+  - [[#org-directory][Org Directory]]
+  - [[#org-roam][Org Roam]]
+  - [[#org-headings][Org Headings]]
+
+* Introduction
+
+This is a literate configuration for Doom Emacs
+
+* Basic Configuration
+
+Basic user information for Emacs.
+
+#+begin_src emacs-lisp
+(setq confirm-kill-emacs nil)
+
+(setq user-full-name "Antonio Peris Sanchez"
+      user-mail-address "perissanchezantonio@gmail.com")
+#+end_src
+
+* UI Configuration
+** Font
+
+Using Terminess Nerd Font Mono and Noto Sans SC for chinese characters
+
+#+begin_src emacs-lisp
+;; Main font
+(setq doom-font (font-spec :family "Terminess Nerd Font Mono" :size 14))
+
+;; Chinese font for CJK characters
+(add-hook 'doom-init-ui-hook
+          (lambda ()
+            (dolist (charset '(kana han cjk-misc bopomofo))
+              (set-fontset-font t charset (font-spec :family "Noto Sans SC" :size 14)))))
+#+end_src
+
+** Theme
+
+Use Catppuccin Mocha theme
+
+#+begin_src emacs-lisp
+(setq doom-theme 'catppuccin)
+(setq catppuccin-flavor 'mocha)
+(load-theme 'catppuccin t)
+#+end_src
+
+** Line Numbers
+
+Enable line numbers
+
+#+begin_src emacs-lisp
+(setq display-line-numbers-type t)
+#+end_src
+
+* Editor Settings
+
+Core editor behavior and display settings.
+
+** Scroll Offset
+
+Keep cursor centered with scroll offset - always show context above/below and left/right of cursor.
+
+#+begin_src emacs-lisp
+(setq scroll-margin 10                  ; 10 lines above/below cursor
+      scroll-conservatively 101          ; Scroll smoothly
+      scroll-preserve-screen-position t  ; Keep cursor position when scrolling
+      hscroll-margin 10                  ; 10 columns left/right of cursor
+      hscroll-step 1)                    ; Smooth horizontal scrolling
+#+end_src
+
+* Keybindings
+** Window Splits
+
+Tmux-style window splitting with =SPC w %= and =SPC w "=
+Additional bindings for closing windows.
+
+#+begin_src emacs-lisp
+(map! :leader
+      :prefix "w"
+      :desc "Split window right" "%" #'evil-window-vsplit
+      :desc "Split window below" "\"" #'evil-window-split
+      :desc "Kill window" "k" #'evil-window-delete
+      :desc "Kill window" "x" #'evil-window-delete)
+#+end_src
+
+** Motion and Scrolling
+
+Auto-center the cursor after scrolling and searching for better visibility.
+
+#+begin_src emacs-lisp
+;; Center cursor after scrolling
+(map! :n "C-d" (cmd! (evil-scroll-down 0) (evil-scroll-line-to-center (line-number-at-pos)))
+      :n "C-u" (cmd! (evil-scroll-up 0) (evil-scroll-line-to-center (line-number-at-pos))))
+
+;; Center cursor after search
+(map! :n "n" (cmd! (evil-search-next) (evil-scroll-line-to-center (line-number-at-pos)))
+      :n "N" (cmd! (evil-search-previous) (evil-scroll-line-to-center (line-number-at-pos))))
+
+;; Center cursor after jumping to changes
+(map! :n "g," (cmd! (evil-goto-last-change) (evil-scroll-line-to-center (line-number-at-pos)))
+      :n "g;" (cmd! (evil-goto-last-change-reverse) (evil-scroll-line-to-center (line-number-at-pos))))
+#+end_src
+
+** Editing
+
+Quality of life improvements for editing and window management.
+
+#+begin_src emacs-lisp
+;; Insert blank lines without entering insert mode
+(map! :n "]<SPC>" (cmd! (evil-open-below 1) (forward-line -1))
+      :n "[<SPC>" (cmd! (evil-open-above 1) (forward-line 1)))
+
+;; Resize windows with Shift + arrow keys
+(map! :n "S-<up>"    (cmd! (evil-window-increase-height 2))
+      :n "S-<down>"  (cmd! (evil-window-decrease-height 2))
+      :n "S-<right>" (cmd! (evil-window-increase-width 2))
+      :n "S-<left>"  (cmd! (evil-window-decrease-width 2)))
+#+end_src
+
+** Toggles
+
+Toggle functions for common settings with =SPC t= prefix.
+
+#+begin_src emacs-lisp
+;; Toggle whitespace visualization
+(defun my/toggle-whitespace ()
+  (interactive)
+  (if whitespace-mode
+      (progn
+        (whitespace-mode -1)
+        (message "Whitespace visualization: OFF"))
+    (progn
+      (setq-local whitespace-style '(face tabs spaces trailing space-before-tab
+                                     newline indentation empty space-after-tab
+                                     space-mark tab-mark newline-mark))
+      (whitespace-mode 1)
+      (message "Whitespace visualization: ON"))))
+
+(map! :leader
+      :prefix "t"
+      :desc "Toggle whitespace" "w" #'my/toggle-whitespace)
+#+end_src
+
+* Environment Setup
+
+Sync exec-path from PATH environment variable so Emacs can find all executables.
+Doom's env file sets PATH correctly, but exec-path needs to be updated from it.
+
+#+begin_src emacs-lisp
+;; Sync exec-path from PATH environment variable
+;; This ensures Emacs can find all executables without hardcoding paths
+(setq exec-path (append (parse-colon-path (getenv "PATH")) exec-path))
+#+end_src
+
+* Debugger Setup
+
+Global debugger configuration using dape (Debug Adapter Protocol for Emacs).
+
+#+begin_src emacs-lisp
+;; Load dape and enable global breakpoint mode
+(use-package! dape
+  :config
+  ;; Enable global breakpoint mode so we can set breakpoints anytime
+  (dape-breakpoint-global-mode +1))
+#+end_src
+
+* Programming Languages Configurations
+
+This section contains configurations for all programming languages I use,
+organized similarly to my Neovim setup.
+
+** Rust
+*** LSP Configuration
+
+Configure rust-analyzer with clippy for enhanced linting, inlay hints, and advanced features.
+
+#+begin_src emacs-lisp
+(after! lsp-mode
+  (setq lsp-rust-analyzer-cargo-watch-command "clippy"
+        lsp-rust-analyzer-check-on-save-command "clippy"
+
+        ;; Inlay hints
+        lsp-rust-analyzer-server-display-inlay-hints t
+        lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial"
+        lsp-rust-analyzer-display-chaining-hints t
+        lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil
+        lsp-rust-analyzer-display-closure-return-type-hints t
+        lsp-rust-analyzer-display-parameter-hints nil
+        lsp-rust-analyzer-display-reborrow-hints nil
+
+        ;; Cargo features
+        lsp-rust-analyzer-cargo-load-out-dirs-from-check t
+        lsp-rust-analyzer-cargo-all-targets t
+        lsp-rust-analyzer-proc-macro-enable t
+
+        ;; Import settings
+        lsp-rust-analyzer-import-granularity "module"
+        lsp-rust-analyzer-import-prefix "by-self"
+
+        ;; Semantic highlighting - disable mutable variable underlining
+        lsp-rust-analyzer-highlighting-mutable-underline nil
+        lsp-rust-analyzer-highlighting-mutable-emphasis "none"))
+#+end_src
+
+*** Debugger Configuration
+
+Configure debugging for Rust using lldb-dap.
+
+#+begin_src emacs-lisp
+(after! dape
+  (add-to-list 'dape-configs
+               `(rust-lldb
+                 modes (rust-mode rust-ts-mode)
+                 command ,(or (executable-find "lldb-dap") "lldb-dap")
+                 command-args ()
+                 fn (lambda (config)
+                      (plist-put config :program
+                                (let ((root (dape--guess-root config)))
+                                  (read-file-name "Rust binary to debug: "
+                                                (file-name-concat root "target/debug/"))))
+                      config)
+                 :type "lldb"
+                 :request "launch"
+                 :cwd dape-cwd-fn
+                 :program ""
+                 :args []
+                 :stopOnEntry nil)))
+#+end_src
+
+** C++
+*** LSP Configuration
+
+Configure clangd for C++ development with inlay hints and advanced features.
+
+#+begin_src emacs-lisp
+(after! lsp-mode
+  (setq lsp-clients-clangd-args '("-j=4"
+                                  "--background-index"
+                                  "--clang-tidy"
+                                  "--completion-style=detailed"
+                                  "--header-insertion=never"
+                                  "--header-insertion-decorators=0"
+                                  "--pch-storage=memory"
+                                  "--enable-config"
+                                  "--function-arg-placeholders"
+                                  "--all-scopes-completion"
+                                  "--cross-file-rename")))
+
+;; Enable inlay hints for C++ (if using lsp-mode with inlay hint support)
+(after! lsp-mode
+  (setq lsp-inlay-hint-enable t))
+#+end_src
+
+*** Debugger Configuration
+
+Configure debugging for C++ using lldb-dap.
+
+#+begin_src emacs-lisp
+(after! dape
+  (add-to-list 'dape-configs
+               `(cpp-lldb
+                 modes (c++-mode c++-ts-mode)
+                 command ,(or (executable-find "lldb-dap") "lldb-dap")
+                 command-args ()
+                 fn (lambda (config)
+                      (plist-put config :program
+                                (read-file-name "C++ binary to debug: "
+                                              (dape--guess-root config)))
+                      config)
+                 :type "lldb"
+                 :request "launch"
+                 :cwd dape-cwd-fn
+                 :program ""
+                 :args []
+                 :stopOnEntry nil)))
+#+end_src
+
+** C
+*** LSP Configuration
+
+Configure clangd for C development with inlay hints and advanced features.
+Uses the same clangd configuration as C++.
+
+*** Debugger Configuration
+
+Configure debugging for C using lldb-dap.
+
+#+begin_src emacs-lisp
+(after! dape
+  (add-to-list 'dape-configs
+               `(c-lldb
+                 modes (c-mode c-ts-mode)
+                 command ,(or (executable-find "lldb-dap") "lldb-dap")
+                 command-args ()
+                 fn (lambda (config)
+                      (plist-put config :program
+                                (read-file-name "C binary to debug: "
+                                              (dape--guess-root config)))
+                      config)
+                 :type "lldb"
+                 :request "launch"
+                 :cwd dape-cwd-fn
+                 :program ""
+                 :args []
+                 :stopOnEntry nil)))
+#+end_src
+
+** Zig
+*** LSP Configuration
+
+Configure ZLS (Zig Language Server) with semantic tokens and advanced features.
+The (zig +lsp) module automatically handles zls startup - zls is found via PATH.
+
+#+begin_src emacs-lisp
+(after! lsp-zig
+  ;; ZLS will be found automatically via PATH
+  (setq lsp-zig-enable-inlay-hints t
+        lsp-zig-enable-autofix t))
+
+;; Enable inlay hints for Zig (LSP is already enabled by +lsp module)
+(after! zig-mode
+  (add-hook 'zig-mode-hook #'lsp-inlay-hints-mode))
+#+end_src
+
+*** Debugger Configuration
+
+Configure debugging for Zig using lldb-dap.
+
+#+begin_src emacs-lisp
+(after! dape
+  (add-to-list 'dape-configs
+               `(zig-lldb
+                 modes (zig-mode zig-ts-mode)
+                 command ,(or (executable-find "lldb-dap") "lldb-dap")
+                 command-args ()
+                 fn (lambda (config)
+                      (plist-put config :program
+                                (let ((root (dape--guess-root config)))
+                                  (read-file-name "Zig binary to debug: "
+                                                (file-name-concat root "zig-out/bin/"))))
+                      config)
+                 :type "lldb"
+                 :request "launch"
+                 :cwd dape-cwd-fn
+                 :program ""
+                 :args []
+                 :stopOnEntry nil)))
+#+end_src
+
+** Go
+*** LSP Configuration
+
+Configure gopls with inlay hints and static analysis.
+
+#+begin_src emacs-lisp
+(after! lsp-mode
+  (setq lsp-go-analyses '((nilness . t)
+                          (unusedparams . t)
+                          (unusedwrite . t)
+                          (useany . t))
+        lsp-go-codelenses '((generate . t)
+                            (test . t)
+                            (tidy . t)
+                            (upgrade_dependency . t)
+                            (vendor . t))
+        lsp-go-use-gofumpt t
+        lsp-go-hints '((assignVariableTypes . t)
+                       (compositeLiteralFields . t)
+                       (compositeLiteralTypes . t)
+                       (constantValues . t)
+                       (functionTypeParameters . t)
+                       (parameterNames . t)
+                       (rangeVariableTypes . t))))
+#+end_src
+
+*** Debugger Configuration
+
+Configure debugging for Go using Delve (dlv) in DAP mode.
+Three configurations for different debugging modes:
+- dlv-debug: Compile and debug Go source code
+- dlv-exec: Debug a pre-compiled binary
+- dlv-test: Debug Go tests
+
+#+begin_src emacs-lisp
+(after! dape
+  ;; 1. Debug mode: Compile and debug source code
+  (add-to-list 'dape-configs
+               `(dlv-debug
+                 modes (go-mode go-ts-mode)
+                 ensure dape-ensure-command
+                 command "dlv"
+                 command-args ("dap" "--listen" "127.0.0.1::autoport")
+                 command-insert-stderr t
+                 port :autoport
+                 fn (lambda (config)
+                      (let* ((root (dape--guess-root config))
+                             (default-dir (if (file-exists-p (concat root "cmd/"))
+                                            (concat root "cmd/")
+                                            root))
+                             (selected-path (read-directory-name "Go package to debug: " default-dir)))
+                        (plist-put config :program
+                                  (expand-file-name selected-path)))
+                      config)
+                 :type "go"
+                 :request "launch"
+                 :mode "debug"
+                 :cwd dape-cwd-fn
+                 :program ""
+                 :args []))
+
+  ;; 2. Exec mode: Debug pre-compiled binary
+  (add-to-list 'dape-configs
+               `(dlv-exec
+                 modes (go-mode go-ts-mode)
+                 ensure dape-ensure-command
+                 command "dlv"
+                 command-args ("dap" "--listen" "127.0.0.1::autoport")
+                 command-insert-stderr t
+                 port :autoport
+                 fn (lambda (config)
+                      (let* ((root (dape--guess-root config))
+                             (default-dir (if (file-exists-p (concat root "build/"))
+                                            (concat root "build/")
+                                            root))
+                             (selected-binary (read-file-name "Go binary to debug: " default-dir)))
+                        (plist-put config :program
+                                  (expand-file-name selected-binary)))
+                      config)
+                 :type "go"
+                 :request "launch"
+                 :mode "exec"
+                 :cwd dape-cwd-fn
+                 :program ""
+                 :args []))
+
+  ;; 3. Test mode: Debug Go tests
+  (add-to-list 'dape-configs
+               `(dlv-test
+                 modes (go-mode go-ts-mode)
+                 ensure dape-ensure-command
+                 command "dlv"
+                 command-args ("dap" "--listen" "127.0.0.1::autoport")
+                 command-insert-stderr t
+                 port :autoport
+                 fn (lambda (config)
+                      (plist-put config :program
+                                (file-name-directory (buffer-file-name)))
+                      config)
+                 :type "go"
+                 :request "launch"
+                 :mode "test"
+                 :cwd dape-cwd-fn
+                 :program ""
+                 :args [])))
+#+end_src
+
+** Python
+*** LSP Configuration
+
+Configure Python with dual LSP setup: Pyright for type checking and Ruff for fast linting.
+
+#+begin_src emacs-lisp
+(after! lsp-mode
+  ;; Load Pyright LSP client
+  (require 'lsp-pyright)
+
+  ;; Pyright configuration - type checking and completions
+  (setq lsp-pyright-typechecking-mode "basic"
+        lsp-pyright-disable-organize-imports nil
+
+        ;; Auto-import and completions
+        lsp-pyright-auto-import-completions t
+        lsp-pyright-use-library-code-for-types t
+
+        ;; Diagnostics
+        lsp-pyright-diagnostic-mode "workspace"
+
+        ;; Virtual environment support
+        lsp-pyright-venv-path (expand-file-name "~/.virtualenvs")))
+
+;; Python-specific: enable inlay hints
+(after! python-mode
+  (add-hook 'python-mode-hook #'lsp-inlay-hints-mode))
+#+end_src
+
+*** Debugger Configuration
+
+Configure debugging for Python using debugpy (Python's Debug Adapter Protocol).
+Prompts for which Python file to run, allowing you to set breakpoints in one file
+and debug from a different entry point (e.g., main.py).
+
+#+begin_src emacs-lisp
+(after! dape
+  (add-to-list 'dape-configs
+               `(debugpy
+                 modes (python-mode python-ts-mode)
+                 ensure dape-ensure-command
+                 command "python3"
+                 command-args ("-m" "debugpy.adapter")
+                 fn (lambda (config)
+                      (let* ((current-dir (file-name-directory (buffer-file-name)))
+                             (selected-file (read-file-name "Python file to run: " current-dir)))
+                        (plist-put config :program (expand-file-name selected-file)))
+                      config)
+                 :request "launch"
+                 :type "executable"
+                 :cwd dape-cwd-fn
+                 :program ""
+                 :args [])))
+#+end_src
+
+** Lua
+*** LSP Configuration
+
+Configure lua-language-server with inlay hints, runtime version, and diagnostics.
+
+#+begin_src emacs-lisp
+(after! lsp-mode
+  (setq lsp-lua-hint-enable t
+        lsp-lua-hint-set-type t
+        lsp-lua-hint-param-type t
+
+        ;; Runtime configuration
+        lsp-lua-runtime-version "LuaJIT"
+
+        ;; Completion
+        lsp-lua-completion-call-snippet "Both"
+        lsp-lua-completion-keyword-snippet "Both"
+
+        ;; Diagnostics
+        lsp-lua-diagnostics-enable t
+        lsp-lua-diagnostics-globals '("vim")  ; If using Neovim Lua API
+
+        ;; Semantic highlighting
+        lsp-semantic-tokens-enable t))
+#+end_src
+* Org Mode
+** Org Directory
+
+Set the default directory for org files.
+
+#+begin_src emacs-lisp
+(setq org-directory "~/Org/org/")
+(add-hook 'org-mode-hook #'hl-todo-mode)
+#+end_src
+
+** Org Roam
+
+Configuration for org-roam note-taking system.
+
+#+begin_src emacs-lisp
+(use-package! org-roam
+  :after org
+  :init
+  (setq org-roam-v2-ack t)
+  :custom
+  (org-roam-directory "~/Org/org-roam")
+  :config
+  (org-roam-db-autosync-enable))
+#+end_src
+
+** Org Headings
+
+Scale org headings for better visual hierarchy in documents.
+
+#+begin_src emacs-lisp
+(custom-theme-set-faces!
+  'doom-one
+  '(org-level-8 :inherit outline-3 :height 1.0)
+  '(org-level-7 :inherit outline-3 :height 1.0)
+  '(org-level-6 :inherit outline-3 :height 1.1)
+  '(org-level-5 :inherit outline-3 :height 1.2)
+  '(org-level-4 :inherit outline-3 :height 1.3)
+  '(org-level-3 :inherit outline-3 :height 1.4)
+  '(org-level-2 :inherit outline-3 :height 1.5)
+  '(org-level-1 :inherit outline-3 :height 1.6)
+  '(org-document-title :height 2.0 :bold t :underline nil))
+#+end_src

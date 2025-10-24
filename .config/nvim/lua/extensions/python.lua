@@ -28,19 +28,20 @@ return {
     {
         "williamboman/mason.nvim",
         opts = function(_, opts)
-            vim.list_extend(opts.ensure_installed, { "debugpy", "black" })
+            vim.list_extend(opts.ensure_installed, { "debugpy" })
             return opts
         end,
     },
 
     {
-        "nvimtools/none-ls.nvim",
+        "stevearc/conform.nvim",
         opts = function(_, opts)
-            local nls = require("null-ls")
-            table.insert(opts.sources, nls.builtins.formatting.black)
+            opts.formatters_by_ft = opts.formatters_by_ft or {}
+            opts.formatters_by_ft.python = { "ruff_format" }
             return opts
         end,
     },
+
 
     {
         "neovim/nvim-lspconfig",

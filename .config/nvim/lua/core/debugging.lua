@@ -2,7 +2,10 @@ return {
     {
         "mfussenegger/nvim-dap",
         keys = {
+            { "<leader>ds", function() require("dap").continue() end, desc = "DAP Start" },
             { "<leader>dc", function() require("dap").continue() end, desc = "DAP Continue" },
+            { "<leader>dS", function() require("dap").terminate() end, desc = "DAP Stop" },
+            { "<leader>dR", function() require("dap").restart() end, desc = "DAP Restart" },
             { "<leader>dt", function() require("dap").toggle_breakpoint() end, desc = "DAP Toggle Breakpoint" },
             { "<leader>dT", function() require("dap").set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, desc = "DAP Conditional Breakpoint" },
             { "<leader>di", function() require("dap").step_into() end, desc = "DAP Step Into" },

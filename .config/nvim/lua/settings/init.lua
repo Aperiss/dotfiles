@@ -7,6 +7,5 @@ return {
         python = true,
         lua = true,
         markdown = true,
-        obsidian = true,
     }
 }
