@@ -1,3 +1,4 @@
 .config/xbuild
 .config/github-copilot
 .config/nvim/lazy-lock.json
+.config/doom/custom.el

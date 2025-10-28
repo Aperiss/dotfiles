@@ -3,17 +3,20 @@
 
 (setq user-full-name "Antonio Peris Sanchez"
       user-mail-address "perissanchezantonio@gmail.com")
+
+;; Don't show dashboard when starting client from daemon
+(setq initial-buffer-choice nil)
 ;; Basic Configuration:1 ends here
 
 ;; [[file:config.org::*Font][Font:1]]
 ;; Main font
-(setq doom-font (font-spec :family "Terminess Nerd Font Mono" :size 14))
+(setq doom-font (font-spec :family "Terminess Nerd Font Mono" :size 12.0))
 
 ;; Chinese font for CJK characters
 (add-hook 'doom-init-ui-hook
           (lambda ()
             (dolist (charset '(kana han cjk-misc bopomofo))
-              (set-fontset-font t charset (font-spec :family "Noto Sans SC" :size 14)))))
+              (set-fontset-font t charset (font-spec :family "Noto Sans SC" :size 12.0)))))
 ;; Font:1 ends here
 
 ;; [[file:config.org::*Theme][Theme:1]]
@@ -47,10 +50,6 @@
 ;; Center cursor after scrolling
 (map! :n "C-d" (cmd! (evil-scroll-down 0) (evil-scroll-line-to-center (line-number-at-pos)))
       :n "C-u" (cmd! (evil-scroll-up 0) (evil-scroll-line-to-center (line-number-at-pos))))
-
-;; Center cursor after search
-(map! :n "n" (cmd! (evil-search-next) (evil-scroll-line-to-center (line-number-at-pos)))
-      :n "N" (cmd! (evil-search-previous) (evil-scroll-line-to-center (line-number-at-pos))))
 
 ;; Center cursor after jumping to changes
 (map! :n "g," (cmd! (evil-goto-last-change) (evil-scroll-line-to-center (line-number-at-pos)))
@@ -154,17 +153,15 @@
 
 ;; [[file:config.org::*LSP Configuration][LSP Configuration:1]]
 (after! lsp-mode
+  ;; Using BACKGROUND INDEXING for UE5 (necessary for complete symbol resolution)
   (setq lsp-clients-clangd-args '("-j=4"
                                   "--background-index"
-                                  "--clang-tidy"
                                   "--completion-style=detailed"
                                   "--header-insertion=never"
-                                  "--header-insertion-decorators=0"
-                                  "--pch-storage=memory"
+                                  "--pch-storage=disk"
                                   "--enable-config"
-                                  "--function-arg-placeholders"
                                   "--all-scopes-completion"
-                                  "--cross-file-rename")))
+                                  "--limit-results=100")))
 
 ;; Enable inlay hints for C++ (if using lsp-mode with inlay hint support)
 (after! lsp-mode
