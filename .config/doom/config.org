@@ -570,6 +570,57 @@ Set the default directory for org files.
 (add-hook 'org-mode-hook #'hl-todo-mode)
 #+end_src
 
+** TODO Keywords
+
+Task workflow states: TODO → NEXT → IN-PROGRESS → REVIEW → DONE → WAITING → BLOCKED → CANCELLED → IDEA
+
+#+begin_src emacs-lisp
+(after! org
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "NEXT(n)" "IN-PROGRESS(i)" "REVIEW(r)" "DONE(d!)" "WAITING(w@/!)" "BLOCKED(b@/!)" "CANCELLED(c@)" "IDEA(I)"))
+
+        ;; TODO keyword faces with catppuccin mocha colors
+        org-todo-keyword-faces
+        '(("TODO" . (:foreground "#f38ba8" :weight bold))           ; Red
+          ("NEXT" . (:foreground "#89b4fa" :weight bold))           ; Blue
+          ("IN-PROGRESS" . (:foreground "#f9e2af" :weight bold))    ; Yellow
+          ("REVIEW" . (:foreground "#cba6f7" :weight bold))         ; Mauve
+          ("DONE" . (:foreground "#a6e3a1" :weight bold))           ; Green
+          ("WAITING" . (:foreground "#fab387" :weight bold))        ; Peach
+          ("BLOCKED" . (:foreground "#eba0ac" :weight bold))        ; Maroon
+          ("CANCELLED" . (:foreground "#6c7086" :weight bold))      ; Overlay0
+          ("IDEA" . (:foreground "#94e2d5" :weight bold)))          ; Teal
+
+        ;; Log state changes into LOGBOOK drawer
+        org-log-into-drawer t))
+#+end_src
+
+** Org Agenda
+
+Configure org-agenda to scan all org files recursively in org/ and org-roam/ directories.
+
+#+begin_src emacs-lisp
+(after! org
+  ;; Scan these directories recursively for all .org files
+  (setq org-agenda-files (list org-directory
+                              (expand-file-name "org-roam" "~/Org/")))
+
+  ;; Include all .org files in subdirectories
+  (setq org-agenda-file-regexp "\\`[^.].*\\.org\\'"
+        org-agenda-skip-unavailable-files t)
+
+  ;; Category tags for tasks
+  (setq org-tag-alist '(("research" . ?r)
+                       ("bug" . ?b)
+                       ("issue" . ?i)
+                       ("documentation" . ?d)
+                       ("feature" . ?f)
+                       ("support" . ?s)))
+
+  ;; Enable tag inheritance (tasks inherit tags from parent headings and file tags)
+  (setq org-use-tag-inheritance t))
+#+end_src
+
 ** Org Roam
 
 Configuration for org-roam note-taking system.
