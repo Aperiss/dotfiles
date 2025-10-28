@@ -2,7 +2,6 @@
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 eval "$(starship init zsh)"
 eval "$(fzf --zsh)"
-# Initialize zoxide (creates 'z' command for smart jumping)
 eval "$(zoxide init zsh)"
 
 source ~/.config/zsh/scripts/tmux_launcher.sh
@@ -67,6 +66,9 @@ alias lli='eza --all --header --long --no-time --git-ignore --color=always --ico
 alias llm='eza --all --header --long --reverse --sort=modified --color=always --icons=always'
 alias llmi='eza --all --header --long --git-ignore --reverse --sort=modified --color=always --icons=always'
 
+# Emacs daemon aliases
+alias emacs='emacsclient -c -a ""'
+
 # Completion styling 
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
@@ -76,8 +78,15 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza --oneline --all --color=always 
 export UE4_ROOT="$HOME/dev/UE4"
 export CARLA_UNREAL_ENGINE_PATH="$HOME/dev/UE5"
 
+# Add Doom Emacs to PATH
+export PATH="$HOME/.config/emacs/bin:$PATH"
+
+# Add Zig to PATH
+export PATH="/usr/local/zig:$PATH"
+
+# Add Go binaries to PATH
+export PATH="$HOME/go/bin:$PATH"
+
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-export NUREC_IMAGE="docker.io/carlasimulator/nvidia-nurec-grpc:0.2.0"
