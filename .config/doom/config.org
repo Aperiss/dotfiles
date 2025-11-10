@@ -4,9 +4,9 @@
 #+PROPERTY: header-args:emacs-lisp :tangle yes :comments link
 
 * Table of Contents :TOC:
-- [[#introduction][Introduction]]
 - [[#basic-configuration][Basic Configuration]]
 - [[#ui-configuration][UI Configuration]]
+  - [[#window-size-and-position][Window Size and Position]]
   - [[#font][Font]]
   - [[#theme][Theme]]
   - [[#line-numbers][Line Numbers]]
@@ -17,9 +17,11 @@
   - [[#motion-and-scrolling][Motion and Scrolling]]
   - [[#editing][Editing]]
   - [[#toggles][Toggles]]
+- [[#terminal-configuration][Terminal Configuration]]
+  - [[#vterm][Vterm]]
 - [[#environment-setup][Environment Setup]]
-- [[#debugger-setup][Debugger Setup]]
-- [[#programming-languages-configurations][Programming Languages Configurations]]
+- [[#global-debugger-configuration][Global Debugger Configuration]]
+- [[#dev-languages-configuration][Dev Languages Configuration]]
   - [[#rust][Rust]]
   - [[#c][C++]]
   - [[#c-1][C]]
@@ -29,16 +31,16 @@
   - [[#lua][Lua]]
 - [[#org-mode][Org Mode]]
   - [[#org-directory][Org Directory]]
+  - [[#org-extensions][Org Extensions]]
+  - [[#org-appearance][Org Appearance]]
+  - [[#obsidian-like-features][Obsidian-like Features]]
   - [[#org-roam][Org Roam]]
   - [[#org-headings][Org Headings]]
-
-* Introduction
-
-This is a literate configuration for Doom Emacs
+  - [[#org-navigation][Org Navigation]]
+  - [[#zen-mode][Zen Mode]]
+  - [[#prettier-ui-elements][Prettier UI Elements]]
 
 * Basic Configuration
-
-Basic user information for Emacs.
 
 #+begin_src emacs-lisp
 (setq confirm-kill-emacs nil)
@@ -48,19 +50,30 @@ Basic user information for Emacs.
 #+end_src
 
 * UI Configuration
+** Window Size and Position
+
+Set initial frame size and position on startup.
+
+#+begin_src emacs-lisp
+(setq initial-frame-alist
+      '((left . 1700)
+        (width . 190)
+        (height . 50)))
+#+end_src
+
 ** Font
 
-Using Terminess Nerd Font Mono and Noto Sans SC for chinese characters
+Using JetBrains Mono Nerd Font and Noto Sans SC for chinese characters
 
 #+begin_src emacs-lisp
 ;; Main font
-(setq doom-font (font-spec :family "Terminess Nerd Font Mono" :size 18.0))
+(setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 14.0))
 
 ;; Chinese font for CJK characters
 (add-hook 'doom-init-ui-hook
           (lambda ()
             (dolist (charset '(kana han cjk-misc bopomofo))
-              (set-fontset-font t charset (font-spec :family "Noto Sans SC" :size 18.0)))))
+              (set-fontset-font t charset (font-spec :family "Noto Sans SC" :size 14.0)))))
 #+end_src
 
 ** Theme
@@ -78,7 +91,9 @@ Use Catppuccin Mocha theme
 Enable line numbers
 
 #+begin_src emacs-lisp
-(setq display-line-numbers-type t)
+(setq display-line-numbers-type t
+      display-line-numbers-width 4
+      display-line-numbers-width-start nil)  ; Don't auto-calculate, always use fixed width
 #+end_src
 
 * Editor Settings
@@ -108,7 +123,6 @@ Additional bindings for closing windows.
       :prefix "w"
       :desc "Split window right" "%" #'evil-window-vsplit
       :desc "Split window below" "\"" #'evil-window-split
-      :desc "Kill window" "k" #'evil-window-delete
       :desc "Kill window" "x" #'evil-window-delete)
 #+end_src
 
@@ -120,10 +134,6 @@ Auto-center the cursor after scrolling and searching for better visibility.
 ;; Center cursor after scrolling
 (map! :n "C-d" (cmd! (evil-scroll-down 0) (evil-scroll-line-to-center (line-number-at-pos)))
       :n "C-u" (cmd! (evil-scroll-up 0) (evil-scroll-line-to-center (line-number-at-pos))))
-
-;; Center cursor after search
-(map! :n "n" (cmd! (evil-search-next) (evil-scroll-line-to-center (line-number-at-pos)))
-      :n "N" (cmd! (evil-search-previous) (evil-scroll-line-to-center (line-number-at-pos))))
 
 ;; Center cursor after jumping to changes
 (map! :n "g," (cmd! (evil-goto-last-change) (evil-scroll-line-to-center (line-number-at-pos)))
@@ -170,6 +180,35 @@ Toggle functions for common settings with =SPC t= prefix.
       :desc "Toggle whitespace" "w" #'my/toggle-whitespace)
 #+end_src
 
+* Terminal Configuration
+** Vterm
+
+Configure vterm to work like a regular terminal (Ghostty-style) with no Evil interference.
+ESC goes directly to the terminal for canceling commands, vim in terminal, etc.
+C-w h/j/k/l still works for window switching.
+C-a temporarily enters Evil normal mode for SPC leader commands, then press i to return to terminal.
+
+#+begin_src emacs-lisp
+(after! vterm
+  ;; Disable Evil in vterm - use Emacs state (no vim bindings)
+  (evil-set-initial-state 'vterm-mode 'emacs)
+
+  ;; Send ESC directly to the terminal
+  (define-key vterm-mode-map (kbd "<escape>") 'vterm-send-escape)
+
+  ;; C-a enters Evil normal mode for leader commands
+  ;; Press i or a to return to terminal input
+  (define-key vterm-mode-map (kbd "C-a") 'evil-normal-state)
+
+  ;; Keep C-w for window commands (don't send to terminal)
+  (define-key vterm-mode-map (kbd "C-w") evil-window-map)
+
+  ;; When in normal mode, pressing i or a returns to Emacs state (terminal input)
+  (evil-define-key 'normal vterm-mode-map
+    (kbd "i") 'evil-emacs-state
+    (kbd "a") 'evil-emacs-state))
+#+end_src
+
 * Environment Setup
 
 Sync exec-path from PATH environment variable so Emacs can find all executables.
@@ -181,7 +220,7 @@ Doom's env file sets PATH correctly, but exec-path needs to be updated from it.
 (setq exec-path (append (parse-colon-path (getenv "PATH")) exec-path))
 #+end_src
 
-* Debugger Setup
+* Global Debugger Configuration
 
 Global debugger configuration using dape (Debug Adapter Protocol for Emacs).
 
@@ -193,14 +232,9 @@ Global debugger configuration using dape (Debug Adapter Protocol for Emacs).
   (dape-breakpoint-global-mode +1))
 #+end_src
 
-* Programming Languages Configurations
-
-This section contains configurations for all programming languages I use,
-organized similarly to my Neovim setup.
-
+* Dev Languages Configuration
 ** Rust
 *** LSP Configuration
-
 Configure rust-analyzer with clippy for enhanced linting, inlay hints, and advanced features.
 
 #+begin_src emacs-lisp
@@ -232,7 +266,6 @@ Configure rust-analyzer with clippy for enhanced linting, inlay hints, and advan
 #+end_src
 
 *** Debugger Configuration
-
 Configure debugging for Rust using lldb-dap.
 
 #+begin_src emacs-lisp
@@ -258,7 +291,6 @@ Configure debugging for Rust using lldb-dap.
 
 ** C++
 *** LSP Configuration
-
 Configure clangd for C++ development with inlay hints and advanced features.
 
 #+begin_src emacs-lisp
@@ -281,7 +313,6 @@ Configure clangd for C++ development with inlay hints and advanced features.
 #+end_src
 
 *** Debugger Configuration
-
 Configure debugging for C++ using lldb-dap.
 
 #+begin_src emacs-lisp
@@ -306,12 +337,10 @@ Configure debugging for C++ using lldb-dap.
 
 ** C
 *** LSP Configuration
-
 Configure clangd for C development with inlay hints and advanced features.
 Uses the same clangd configuration as C++.
 
 *** Debugger Configuration
-
 Configure debugging for C using lldb-dap.
 
 #+begin_src emacs-lisp
@@ -336,7 +365,6 @@ Configure debugging for C using lldb-dap.
 
 ** Zig
 *** LSP Configuration
-
 Configure ZLS (Zig Language Server) with semantic tokens and advanced features.
 The (zig +lsp) module automatically handles zls startup - zls is found via PATH.
 
@@ -352,7 +380,6 @@ The (zig +lsp) module automatically handles zls startup - zls is found via PATH.
 #+end_src
 
 *** Debugger Configuration
-
 Configure debugging for Zig using lldb-dap.
 
 #+begin_src emacs-lisp
@@ -378,7 +405,6 @@ Configure debugging for Zig using lldb-dap.
 
 ** Go
 *** LSP Configuration
-
 Configure gopls with inlay hints and static analysis.
 
 #+begin_src emacs-lisp
@@ -403,7 +429,6 @@ Configure gopls with inlay hints and static analysis.
 #+end_src
 
 *** Debugger Configuration
-
 Configure debugging for Go using Delve (dlv) in DAP mode.
 Three configurations for different debugging modes:
 - dlv-debug: Compile and debug Go source code
@@ -485,7 +510,6 @@ Three configurations for different debugging modes:
 
 ** Python
 *** LSP Configuration
-
 Configure Python with dual LSP setup: Pyright for type checking and Ruff for fast linting.
 
 #+begin_src emacs-lisp
@@ -513,10 +537,7 @@ Configure Python with dual LSP setup: Pyright for type checking and Ruff for fas
 #+end_src
 
 *** Debugger Configuration
-
 Configure debugging for Python using debugpy (Python's Debug Adapter Protocol).
-Prompts for which Python file to run, allowing you to set breakpoints in one file
-and debug from a different entry point (e.g., main.py).
 
 #+begin_src emacs-lisp
 (after! dape
@@ -540,7 +561,6 @@ and debug from a different entry point (e.g., main.py).
 
 ** Lua
 *** LSP Configuration
-
 Configure lua-language-server with inlay hints, runtime version, and diagnostics.
 
 #+begin_src emacs-lisp

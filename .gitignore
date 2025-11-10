@@ -1,3 +1,9 @@
 .config/xbuild
 .config/github-copilot
 .config/nvim/lazy-lock.json
+
+# Doom Emacs - ignore installation directory, only track config
+.config/emacs/
+.config/doom/.local/
+.config/doom/custom.el
+.config/doom/config.el
