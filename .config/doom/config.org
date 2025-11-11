@@ -33,12 +33,10 @@
   - [[#org-directory][Org Directory]]
   - [[#org-extensions][Org Extensions]]
   - [[#org-appearance][Org Appearance]]
-  - [[#org-roam-improvements][Org Roam Improvements]]
   - [[#org-roam][Org Roam]]
-  - [[#org-headings][Org Headings]]
-  - [[#org-navigation][Org Navigation]]
+  - [[#org-keybindings][Org Keybindings]]
   - [[#zen-mode][Zen Mode]]
-  - [[#prettier-ui-elements][Prettier UI Elements]]
+  - [[#ttrpg-notes-system][TTRPG Notes System]]
 
 * Basic Configuration
 
@@ -624,21 +622,58 @@ Group and organize agenda items by custom criteria (tags, priorities, etc.).
 #+end_src
 
 ** Org Appearance
-Modern note-taking appearance for org-mode
+Modern note-taking appearance for org-mode with improved typography and visual elements.
+
+*** Visual Settings
+General org-mode visual enhancements for emphasis, folding, indentation, and links.
 
 #+begin_src emacs-lisp
-;; Set fonts for org-mode - use JetBrains Mono for everything
-(add-hook 'org-mode-hook
-          (lambda ()
-            ;; Enable visual line mode for better text wrapping
-            (visual-line-mode 1)
-            ;; Softer line spacing
-            (setq-local line-spacing 0.2)))
+(after! org
+  (setq org-hide-emphasis-markers t        ; Hide markup characters like *bold*
+        org-pretty-entities t              ; Show UTF8 characters for \alpha etc
+        org-ellipsis " ▾"                  ; Nicer folding symbol
+        org-hide-leading-stars t           ; Cleaner heading bullets
+        org-startup-indented t             ; Indent content under headings
+        org-adapt-indentation nil          ; Don't indent content when promoting/demoting
+        org-hidden-keywords '(title)       ; Hide #+title: keyword
+        org-link-descriptive t             ; Show only description in links
 
-;; Readable line length - centers text with comfortable max width
-(setq-default fill-column 80)  ; Max line width for readability
+        ;; Line spacing and wrapping
+        fill-column 80)                    ; Max line width for readability
 
-;; Keep code blocks, tables, and tags monospaced for alignment
+  ;; Enable visual line mode and softer line spacing
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (visual-line-mode 1)
+              (setq-local line-spacing 0.2))))
+#+end_src
+
+*** Fonts and Faces
+All font and face configuration for org-mode elements.
+
+#+begin_src emacs-lisp
+(after! org
+  ;; Heading sizes with JetBrains Mono
+  (dolist (face '((org-level-1 . 1.35)
+                  (org-level-2 . 1.3)
+                  (org-level-3 . 1.2)
+                  (org-level-4 . 1.1)
+                  (org-level-5 . 1.1)
+                  (org-level-6 . 1.1)
+                  (org-level-7 . 1.1)
+                  (org-level-8 . 1.1)))
+    (set-face-attribute (car face) nil
+                        :font "JetBrainsMono Nerd Font"
+                        :weight 'bold
+                        :height (cdr face)))
+
+  ;; Document title
+  (set-face-attribute 'org-document-title nil
+                      :font "JetBrainsMono Nerd Font"
+                      :weight 'bold
+                      :height 1.8))
+
+;; Monospaced elements (code, tables, metadata)
 (custom-set-faces!
   '(org-code :inherit (shadow fixed-pitch) :family "JetBrainsMono Nerd Font" :height 0.9)
   '(org-block :inherit fixed-pitch :family "JetBrainsMono Nerd Font" :height 0.9)
@@ -647,66 +682,103 @@ Modern note-taking appearance for org-mode
   '(org-special-keyword :inherit (font-lock-comment-face fixed-pitch) :family "JetBrainsMono Nerd Font" :height 0.9)
   '(org-meta-line :inherit (font-lock-comment-face fixed-pitch) :family "JetBrainsMono Nerd Font" :height 0.9)
   '(org-checkbox :inherit fixed-pitch :family "JetBrainsMono Nerd Font")
-  '(org-tag :inherit (shadow fixed-pitch) :family "JetBrainsMono Nerd Font" :height 0.8))
-
-;; Modern visual enhancements
-(setq org-hide-emphasis-markers t        ; Hide markup characters like *bold*
-      org-pretty-entities t              ; Show UTF8 characters for \alpha etc
-      org-ellipsis " ▾"                  ; Nicer folding symbol
-      org-hide-leading-stars t           ; Cleaner heading bullets
-      org-startup-indented t             ; Indent content under headings
-      org-adapt-indentation nil)         ; Don't indent content when promoting/demoting
-
-;; Better list bullets
-(after! org
-  (setq org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+")))
-
-  ;; Org modern bullets for headings (using org-superstar from Doom)
-  (setq org-superstar-headline-bullets-list '("◉" "○" "●" "○" "●" "○" "●"))
-
-  ;; Pretty checkboxes using org-superstar
-  (setq org-superstar-item-bullet-alist
-        '((?* . ?•)
-          (?+ . ?◦)
-          (?- . ?▸))))
-
-;; Hide unnecessary org markup elements for cleaner look
-(setq org-hidden-keywords '(title))      ; Hide #+title:
-
-;; Make links more readable - show only description
-(setq org-link-descriptive t)
-
-;; Better source block appearance
-(setq org-src-fontify-natively t         ; Syntax highlighting in code blocks
-      org-src-tab-acts-natively t        ; Tab works normally in code blocks
-      org-src-preserve-indentation t)    ; Keep indentation in code blocks
+  '(org-tag :inherit (shadow fixed-pitch) :family "JetBrainsMono Nerd Font" :height 0.8)
+  '(org-indent :inherit (org-hide fixed-pitch)))
 #+end_src
 
-** Org Roam Improvements
+*** Bullets and Icons
+Org-superstar configuration for heading bullets and list item symbols.
 
 #+begin_src emacs-lisp
-(setq +org-roam-auto-backlinks-buffer nil)  ; Manually toggle backlinks buffer with SPC n r r
+(use-package! org-superstar
+  :after org
+  :config
+  (setq org-superstar-leading-bullet " "
+        org-superstar-special-todo-items nil
+        org-superstar-headline-bullets-list '("◉" "○" "●" "○" "●" "○" "●")
+        org-superstar-item-bullet-alist '((?* . ?•)
+                                          (?+ . ?◦)
+                                          (?- . ?▸)))
+  (add-hook 'org-mode-hook 'org-superstar-mode))
 
-;; Enhanced search in org-roam with tag display
-(after! org-roam
-  ;; Better node search with previews and tags
-  (setq org-roam-node-display-template
-        (concat "${title:*} "
-                (propertize "${tags:10}" 'face 'org-tag)))
+;; List bullet demotion behavior
+(after! org
+  (setq org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+"))))
+#+end_src
 
-  ;; Enable completion everywhere for [[links]]
-  (setq org-roam-completion-everywhere t))
+*** TODO Keywords and Priorities
+TODO state definitions, colors, and priority levels with Catppuccin Mocha theme.
 
-;; Link preview on hover (eldoc shows link destinations)
-(setq eldoc-echo-area-use-multiline-p nil)
-(add-hook 'org-mode-hook #'eldoc-mode)
+#+begin_src emacs-lisp
+(after! org
+  ;; TODO keyword sequence
+  (setq org-todo-keywords
+        '((sequence
+           "TODO(t)" "PROJ(p)" "READ(r)" "CHECK(c)" "IDEA(i)" "WAITING(w)"
+           "|"
+           "DONE(d)" "CANCELLED(k)" "POSTPONED(s)")))
 
-;; Better link following - preview before opening
-(setq org-return-follows-link nil)  ; Prevent accidental link following with RET
+  ;; TODO keyword colors
+  (setq org-todo-keyword-faces
+        '(("TODO"      . (:foreground "#a6e3a1" :background "#1e1e2e" :weight bold))
+          ("PROJ"      . (:foreground "#89dceb" :background "#1e1e2e" :weight bold))
+          ("READ"      . (:foreground "#89b4fa" :background "#1e1e2e" :weight bold))
+          ("CHECK"     . (:foreground "#f9e2af" :background "#1e1e2e" :weight bold))
+          ("IDEA"      . (:foreground "#f5c2e7" :background "#1e1e2e" :weight bold))
+          ("WAITING"   . (:foreground "#fab387" :background "#1e1e2e" :weight bold))
+          ("DONE"      . (:foreground "#6c7086" :background "#1e1e2e" :weight bold))
+          ("CANCELLED" . (:foreground "#585b70" :background "#1e1e2e" :weight bold))
+          ("POSTPONED" . (:foreground "#45475a" :background "#1e1e2e" :weight bold))))
+
+  ;; Priority settings
+  (setq org-lowest-priority ?F
+        org-default-priority ?E)
+
+  ;; Priority colors (gradient from red to gray)
+  (setq org-priority-faces
+        '((?A . (:foreground "#f38ba8" :background "#1e1e2e" :weight bold))
+          (?B . (:foreground "#fab387" :background "#1e1e2e" :weight bold))
+          (?C . (:foreground "#f9e2af" :background "#1e1e2e" :weight bold))
+          (?D . (:foreground "#a6e3a1" :background "#1e1e2e" :weight bold))
+          (?E . (:foreground "#89b4fa" :background "#1e1e2e" :weight bold))
+          (?F . (:foreground "#6c7086" :background "#1e1e2e" :weight bold)))))
+#+end_src
+
+*** Source Blocks
+Syntax highlighting and indentation settings for code blocks.
+
+#+begin_src emacs-lisp
+(after! org
+  (setq org-src-fontify-natively t         ; Syntax highlighting in code blocks
+        org-src-tab-acts-natively t        ; Tab works normally in code blocks
+        org-src-preserve-indentation t))   ; Keep indentation in code blocks
+#+end_src
+
+*** Org Modern
+Tag alignment and agenda styling using org-modern.
+
+#+begin_src emacs-lisp
+(after! org-modern
+  (setq org-auto-align-tags t
+        org-tags-column 0
+        org-fold-catch-invisible-edits 'show-and-error
+        org-special-ctrl-a/e t
+        org-insert-heading-respect-content t
+        org-modern-star nil                ; Let org-superstar handle stars
+        ;; Agenda styling
+        org-agenda-tags-column 0
+        org-agenda-block-separator ?─
+        org-agenda-time-grid '((daily today require-timed)
+                               (800 1000 1200 1400 1600 1800 2000)
+                               " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+        org-agenda-current-time-string "⭠ now ─────────────────────────────────────────────────"))
 #+end_src
 
 ** Org Roam
-Configuration for org-roam note-taking system.
+Configuration for org-roam note-taking system with fuzzy link resolution and dead link tracking.
+
+*** Basic Configuration
+Core org-roam setup with directory, database, and completion settings.
 
 #+begin_src emacs-lisp
 (use-package! org-roam
@@ -718,74 +790,93 @@ Configuration for org-roam note-taking system.
   (org-roam-completion-everywhere t)  ; Enable completion when typing [[...]]
   :config
   (org-roam-db-autosync-enable))
+#+end_src
 
-;; Make fuzzy links [[Title]] search org-roam database and convert to ID links
+*** Fuzzy Link Resolution
+Automatically resolve [[Title]] links by searching org-roam database and converting to ID links.
+Creates new nodes via capture if they don't exist.
+
+#+begin_src emacs-lisp
 (after! org-roam
   (defun my/org-roam-resolve-fuzzy-link (orig-fn s &optional avoid-pos stealth)
     "Advise org-link-search to check org-roam first and convert fuzzy links to ID links.
 If the node doesn't exist, create it via org-roam-capture."
-    ;; First check if org-roam has a node with this title
-    (if-let ((node (org-roam-node-from-title-or-alias s)))
-        (progn
-          ;; Convert the fuzzy link to an ID link
-          (when (and (not stealth) (org-in-regexp org-link-bracket-re))
-            (let* ((link-start (match-beginning 0))
-                   (link-end (match-end 0))
-                   (id (org-roam-node-id node)))
+    ;; Only intercept if we're in an org-roam directory and it's a simple fuzzy link
+    (if (and (buffer-file-name)
+             (string-match-p (expand-file-name org-roam-directory) (buffer-file-name))
+             (not (string-match-p ":" s)))  ; Only fuzzy links (no protocol like "id:" or "file:")
+        ;; Check if org-roam has a node with this title
+        (if-let ((node (org-roam-node-from-title-or-alias s)))
+            (progn
+              ;; Convert the fuzzy link to an ID link
+              (when (not stealth)
+                (save-excursion
+                  ;; Search backward for the link pattern
+                  (when (re-search-backward (concat "\\[\\[" (regexp-quote s) "\\]\\]") (line-beginning-position 0) t)
+                    (let* ((link-start (match-beginning 0))
+                           (link-end (match-end 0))
+                           (id (org-roam-node-id node)))
+                      (delete-region link-start link-end)
+                      (insert (format "[[id:%s][%s]]" id s))
+                      ;; Auto-save after converting the link
+                      (save-buffer)))))
+              ;; Visit the node
+              (org-roam-node-visit node))
+          ;; Node doesn't exist - create it via org-roam-capture
+          (let* ((title s)
+                 (source-buffer (current-buffer))
+                 (link-start nil)
+                 (link-end nil))
+            ;; Save link position if we're at a link
+            (when (not stealth)
               (save-excursion
-                (goto-char link-start)
-                (delete-region link-start link-end)
-                (insert (format "[[id:%s][%s]]" id s)))
-              ;; Auto-save after converting the link
-              (save-buffer)))
-          ;; Visit the node
-          (org-roam-node-visit node))
-      ;; Node doesn't exist - create it via org-roam-capture
-      (let* ((title s)
-             (source-buffer (current-buffer))
-             (link-start nil)
-             (link-end nil))
-        ;; Save link position if we're at a link
-        (when (and (not stealth) (org-in-regexp org-link-bracket-re))
-          (setq link-start (match-beginning 0)
-                link-end (match-end 0)))
+                (when (re-search-backward (concat "\\[\\[" (regexp-quote s) "\\]\\]") (line-beginning-position 0) t)
+                  (setq link-start (match-beginning 0)
+                        link-end (match-end 0)))))
 
-        ;; Add a one-time hook to convert the link after capture finishes
-        (when link-start
-          (letrec ((convert-link-fn
-                    (lambda ()
-                      ;; This runs after capture is finalized (whether completed or aborted)
-                      ;; Force database sync for the current file if it exists
-                      (when (and (buffer-file-name) (file-exists-p (buffer-file-name)))
-                        (org-roam-db-update-file (buffer-file-name)))
-                      ;; Small delay to ensure database is updated
-                      (run-at-time
-                       0.1 nil
-                       (lambda ()
-                         ;; Check if the node was actually created by looking it up in the database
-                         (when-let ((new-node (org-roam-node-from-title-or-alias title)))
-                           (let ((id (org-roam-node-id new-node)))
-                             ;; Switch back to source buffer and convert the link
-                             (when (buffer-live-p source-buffer)
-                               (with-current-buffer source-buffer
-                                 (save-excursion
-                                   (goto-char link-start)
-                                   (when (< link-start (point-max))
-                                     (delete-region link-start link-end)
-                                     (insert (format "[[id:%s][%s]]" id title))))
-                                 ;; Auto-save the buffer after converting the link
-                                 (save-buffer)))))
-                         ;; Remove this hook after running
-                         (remove-hook 'org-capture-after-finalize-hook convert-link-fn))))))
-            (add-hook 'org-capture-after-finalize-hook convert-link-fn)))
+            ;; Add a one-time hook to convert the link after capture finishes
+            (when link-start
+              (letrec ((convert-link-fn
+                        (lambda ()
+                          ;; This runs after capture is finalized (whether completed or aborted)
+                          ;; Force database sync for the current file if it exists
+                          (when (and (buffer-file-name) (file-exists-p (buffer-file-name)))
+                            (org-roam-db-update-file (buffer-file-name)))
+                          ;; Small delay to ensure database is updated
+                          (run-at-time
+                           0.1 nil
+                           (lambda ()
+                             ;; Check if the node was actually created by looking it up in the database
+                             (when-let ((new-node (org-roam-node-from-title-or-alias title)))
+                               (let ((id (org-roam-node-id new-node)))
+                                 ;; Switch back to source buffer and convert the link
+                                 (when (buffer-live-p source-buffer)
+                                   (with-current-buffer source-buffer
+                                     (save-excursion
+                                       (goto-char link-start)
+                                       (when (< link-start (point-max))
+                                         (delete-region link-start link-end)
+                                         (insert (format "[[id:%s][%s]]" id title))))
+                                     ;; Auto-save the buffer after converting the link
+                                     (save-buffer)))))
+                             ;; Remove this hook after running
+                             (remove-hook 'org-capture-after-finalize-hook convert-link-fn))))))
+                (add-hook 'org-capture-after-finalize-hook convert-link-fn)))
 
-        ;; Trigger org-roam capture with the title
-        (org-roam-capture- :node (org-roam-node-create :title title)
-                           :props '(:finalize find-file)))))
+            ;; Trigger org-roam capture with the title
+            (org-roam-capture- :node (org-roam-node-create :title title)
+                               :props '(:finalize find-file))))
+      ;; Not an org-roam link or not in org-roam directory - use default behavior
+      (funcall orig-fn s avoid-pos stealth)))
 
   (advice-add 'org-link-search :around #'my/org-roam-resolve-fuzzy-link))
+#+end_src
 
-;; Dead links - simple command approach
+*** Dead Link Detection
+Track and display fuzzy links that don't have matching org-roam nodes. Provides both an interactive command to show dead links and a sidebar section in the org-roam buffer.
+
+#+begin_src emacs-lisp
+;; Command to show dead links in current buffer
 (defun my/org-roam-show-dead-links ()
   "Show all dead links (fuzzy links with no matching nodes) in current buffer."
   (interactive)
@@ -802,7 +893,7 @@ If the node doesn't exist, create it via org-roam-capture."
         (message "Dead links: %s" (string-join (seq-uniq dead-links) ", "))
       (message "No dead links found"))))
 
-;; Dead links section for org-roam buffer
+;; Dead links section for org-roam buffer sidebar
 (defun org-roam-buffer-dead-links-section (node)
   "Section showing dead links for NODE in org-roam buffer."
   (when-let ((file (org-roam-node-file node)))
@@ -827,14 +918,15 @@ If the node doesn't exist, create it via org-roam-capture."
             (insert "  No dead links found.\n"))
           (insert "\n"))))))
 
+;; Configure org-roam buffer sections
 (after! org-roam
-  ;; Add dead links section to org-roam buffer - set explicitly
   (setq org-roam-mode-sections
         (list #'org-roam-backlinks-section
               #'org-roam-reflinks-section
               #'org-roam-unlinked-references-section
               #'org-roam-buffer-dead-links-section)))
 
+;; Keybinding for dead links command
 (map! :after org-roam
       :map org-mode-map
       :localleader
@@ -842,8 +934,32 @@ If the node doesn't exist, create it via org-roam-capture."
       :desc "Show dead links" "d" #'my/org-roam-show-dead-links)
 #+end_src
 
+*** Display and Search Settings
+Enhanced search with tag display, backlinks configuration, and link behavior customization.
+
+#+begin_src emacs-lisp
+(setq +org-roam-auto-backlinks-buffer nil)  ; Manually toggle backlinks buffer with SPC n r r
+
+;; Enhanced search in org-roam with tag display
+(after! org-roam
+  ;; Better node search with previews and tags
+  (setq org-roam-node-display-template
+        (concat "${title:*} "
+                (propertize "${tags:10}" 'face 'org-tag)))
+
+  ;; Enable completion everywhere for [[links]]
+  (setq org-roam-completion-everywhere t))
+
+;; Link preview on hover (eldoc shows link destinations)
+(setq eldoc-echo-area-use-multiline-p nil)
+(add-hook 'org-mode-hook #'eldoc-mode)
+
+;; Better link following - enable RET to follow links
+(setq org-return-follows-link t)
+#+end_src
+
 *** Org Roam UI
-Interactive graph visualization in browser with keybinding.
+Interactive graph visualization in browser with keybinding. Provides a live-updating knowledge graph that syncs with Emacs theme and follows node navigation.
 
 #+begin_src emacs-lisp
 (use-package! org-roam-ui
@@ -869,10 +985,139 @@ Interactive graph visualization in browser with keybinding.
           :desc "Toggle org-roam-ui" "g" #'org-roam-ui-mode))))
 #+end_src
 
-*** TTRPG Notes Configuration
+** Org Keybindings
+Custom keybindings for org-mode navigation, editing, and TODO management.
+
+*** Visual Line Navigation
+Make j/k move by visual lines for better wrapped text navigation.
+
+#+begin_src emacs-lisp
+(map! :after org
+      :map org-mode-map
+      :n "j" #'evil-next-visual-line
+      :n "k" #'evil-previous-visual-line)
+#+end_src
+
+*** TODO State Cycling
+Keybindings for cycling TODO states (C-c C-t also works).
+S-left/S-right are used for window resizing, so use localleader instead.
+
+#+begin_src emacs-lisp
+(map! :after org
+      :map org-mode-map
+      :localleader
+      :desc "Cycle TODO state forward" "t" (cmd! (org-todo 'right))
+      :desc "Cycle TODO state backward" "T" (cmd! (org-todo 'left))
+      :desc "Mark as DONE" "x" (cmd! (org-todo "DONE")))
+#+end_src
+
+*** Link Bracket Editing
+Quickly wrap/unwrap words in org link brackets with M-[ and M-].
+
+#+begin_src emacs-lisp
+(defun my/org-surround-with-link ()
+  "Surround word at point or selection with [[ ]]."
+  (interactive)
+  (let ((bounds (if (region-active-p)
+                    (cons (region-beginning) (region-end))
+                  (bounds-of-thing-at-point 'word))))
+    (when bounds
+      (save-excursion
+        (goto-char (cdr bounds))
+        (insert "]]")
+        (goto-char (car bounds))
+        (insert "[[")))))
+
+(defun my/org-remove-link-brackets ()
+  "Remove [[ ]] surrounding word at point or selection."
+  (interactive)
+  (save-excursion
+    (let ((bounds (if (region-active-p)
+                      (cons (region-beginning) (region-end))
+                    (bounds-of-thing-at-point 'word))))
+      (when bounds
+        ;; Search backward for [[
+        (goto-char (car bounds))
+        (when (search-backward "[[" (line-beginning-position) t)
+          (delete-char 2)
+          (setq bounds (cons (- (car bounds) 2) (- (cdr bounds) 2))))
+        ;; Search forward for ]]
+        (goto-char (cdr bounds))
+        (when (search-forward "]]" (line-end-position) t)
+          (delete-char -2))))))
+
+(map! :map org-mode-map
+      :n "M-[" #'my/org-surround-with-link
+      :v "M-[" #'my/org-surround-with-link
+      :n "M-]" #'my/org-remove-link-brackets
+      :v "M-]" #'my/org-remove-link-brackets)
+#+end_src
+
+** Zen Mode
+Enhanced zen mode configuration for distraction-free writing in org-mode.
+
+*** Writeroom Settings
+Basic writeroom-mode configuration for width, text scaling, and window behavior.
+
+#+begin_src emacs-lisp
+(after! writeroom-mode
+  (setq writeroom-restore-window-config nil  ; Don't restore window config
+        +zen-text-scale 0                     ; Disable Doom's text scaling
+        +zen-mixed-pitch-modes nil            ; Disable Doom's mixed-pitch
+        writeroom-width 80))                  ; Set width to 80 characters
+#+end_src
+
+*** Font and Layout
+Set custom font and fix width calculation for zen mode.
+
+#+begin_src emacs-lisp
+(defun my/set-zen-font-before-writeroom (orig-fun &rest args)
+  "Set font before writeroom-mode calculates margins."
+  (when (and (not writeroom-mode)
+             (derived-mode-p 'org-mode))
+    ;; Set font to JetBrains Mono 16pt BEFORE writeroom runs
+    (setq-local face-remapping-alist
+                '((default :family "JetBrainsMono Nerd Font" :height 160)))
+    ;; Disable mixed-pitch modes
+    (when (fboundp 'mixed-pitch-mode)
+      (mixed-pitch-mode -1))
+    (variable-pitch-mode -1)
+    ;; Force redisplay so font metrics are updated
+    (redisplay t))
+  ;; Call the original writeroom-mode function
+  (apply orig-fun args)
+  ;; Fix width calculation after writeroom runs
+  (when (and writeroom-mode (derived-mode-p 'org-mode))
+    (setq-local visual-fill-column-width 80)
+    (setq-local visual-fill-column-extra-text-width '(0 . 0))
+    (setq-local visual-fill-column-center-text t)
+    (visual-fill-column-mode -1)
+    (visual-fill-column-mode 1)))
+
+(advice-add 'writeroom-mode :around #'my/set-zen-font-before-writeroom)
+#+end_src
+
+*** Appearance Hooks
+Customize visual appearance when entering/exiting zen mode.
+
+#+begin_src emacs-lisp
+(add-hook 'writeroom-mode-hook
+          (lambda ()
+            (if writeroom-mode
+                ;; Hide line numbers in zen mode
+                (display-line-numbers-mode -1)
+              ;; Restore when exiting zen mode
+              (display-line-numbers-mode 1)
+              (buffer-face-mode -1)
+              (setq-local face-remapping-alist nil))))
+#+end_src
+
+** TTRPG Notes System
 TTRPG-specific org-roam enhancements for managing adventures, worldbuilding, and system references.
 
-Directory structure (in sort order):
+*** Directory Structure
+Organized structure for tabletop RPG content (in sort order):
+
 - =0_inbox/= - Uncategorized notes to organize later
 - =1_adventures/= - Campaign/adventure-specific content
   - Each adventure contains: sessions/, characters/, locations/, story/, prep/
@@ -882,7 +1127,7 @@ Directory structure (in sort order):
 - =4_other/= - GM tips, generators, ideas, misc
 - =z_meta/= - Shared templates and general GM resources
 
-**** TTRPG Context System
+*** Context Management System
 Context variables to remember current working world/adventure/system during a session.
 Set once, create many notes without repeated prompts.
 
@@ -996,8 +1241,7 @@ Set once, create many notes without repeated prompts.
                 (completing-read "System: " systems nil t))))))
 #+end_src
 
-**** TTRPG Capture Templates
-
+*** Capture Templates
 Templates are stored as files in =ttrpg/z_meta/templates/= for easy editing.
 Edit the template files directly to customize note structures.
 Access via =SPC n r f= (creates new node with template selection).
@@ -1146,267 +1390,3 @@ Access via =SPC n r f= (creates new node with template selection).
          :desc "Show context" "?" #'my/ttrpg-show-context))))
 #+end_src
 
-** Org Headings
-Scale org headings for better visual hierarchy in documents.
-Inspired by Nicolas Rougier's minimal aesthetic.
-
-#+begin_src emacs-lisp
-(custom-theme-set-faces!
-  'doom-one
-  ;; More subtle heading sizes for cleaner look
-  '(org-level-8 :inherit outline-8 :height 1.0 :weight normal)
-  '(org-level-7 :inherit outline-7 :height 1.0 :weight normal)
-  '(org-level-6 :inherit outline-6 :height 1.05 :weight normal)
-  '(org-level-5 :inherit outline-5 :height 1.1 :weight normal)
-  '(org-level-4 :inherit outline-4 :height 1.15 :weight semi-bold)
-  '(org-level-3 :inherit outline-3 :height 1.2 :weight semi-bold)
-  '(org-level-2 :inherit outline-2 :height 1.3 :weight bold)
-  '(org-level-1 :inherit outline-1 :height 1.4 :weight bold)
-  ;; Cleaner document title - less overwhelming
-  '(org-document-title :height 1.6 :weight bold :underline nil)
-  ;; Subtle, clean links
-  '(org-link :underline nil :weight normal)
-  ;; Dimmed metadata
-  '(org-meta-line :inherit font-lock-comment-face :height 0.85)
-  '(org-special-keyword :inherit font-lock-comment-face :height 0.85)
-  ;; Cleaner tags
-  '(org-tag :height 0.8 :weight normal))
-#+end_src
-
-** Org Navigation
-Make j/k move by visual lines instead of logical lines for better navigation with wrapped text.
-
-#+begin_src emacs-lisp
-(after! evil-org
-  (evil-define-key 'normal org-mode-map
-    (kbd "j") 'evil-next-visual-line
-    (kbd "k") 'evil-previous-visual-line))
-
-;; Surround word with org link brackets using M-[
-(defun my/org-surround-with-link ()
-  "Surround word at point or selection with [[ ]]."
-  (interactive)
-  (let ((bounds (if (region-active-p)
-                    (cons (region-beginning) (region-end))
-                  (bounds-of-thing-at-point 'word))))
-    (when bounds
-      (save-excursion
-        (goto-char (cdr bounds))
-        (insert "]]")
-        (goto-char (car bounds))
-        (insert "[[")))))
-
-;; Remove surrounding org link brackets using M-]
-(defun my/org-remove-link-brackets ()
-  "Remove [[ ]] surrounding word at point or selection."
-  (interactive)
-  (save-excursion
-    (let ((bounds (if (region-active-p)
-                      (cons (region-beginning) (region-end))
-                    (bounds-of-thing-at-point 'word))))
-      (when bounds
-        ;; Search backward for [[
-        (goto-char (car bounds))
-        (when (search-backward "[[" (line-beginning-position) t)
-          (delete-char 2)
-          (setq bounds (cons (- (car bounds) 2) (- (cdr bounds) 2))))
-        ;; Search forward for ]]
-        (goto-char (cdr bounds))
-        (when (search-forward "]]" (line-end-position) t)
-          (delete-char -2))))))
-
-(map! :map org-mode-map
-      :n "M-[" #'my/org-surround-with-link
-      :v "M-[" #'my/org-surround-with-link
-      :n "M-]" #'my/org-remove-link-brackets
-      :v "M-]" #'my/org-remove-link-brackets)
-#+end_src
-
-** Zen Mode
-Enhanced zen mode configuration for distraction-free writing in org-mode.
-TTRPG notes automatically open in zen mode.
-
-#+begin_src emacs-lisp
-;; Zen mode configuration
-(after! writeroom-mode
-  ;; Don't restore window config - prevents closing other windows
-  (setq writeroom-restore-window-config nil)
-  ;; Disable Doom's automatic text scaling in zen mode
-  (setq +zen-text-scale 0)
-  ;; Disable Doom's mixed-pitch in zen mode
-  (setq +zen-mixed-pitch-modes nil)
-  ;; Set the width to 80 characters
-  (setq writeroom-width 80))
-
-;; Set font and width before writeroom calculates margins
-(defun my/set-zen-font-before-writeroom (orig-fun &rest args)
-  "Set font before writeroom-mode calculates margins."
-  (when (and (not writeroom-mode)  ; Only when enabling
-             (derived-mode-p 'org-mode))
-    ;; Set font to JetBrains Mono 16pt BEFORE writeroom runs
-    (setq-local face-remapping-alist
-                '((default :family "JetBrainsMono Nerd Font" :height 160)))
-    ;; Disable mixed-pitch modes
-    (when (fboundp 'mixed-pitch-mode)
-      (mixed-pitch-mode -1))
-    (variable-pitch-mode -1)
-    ;; Force redisplay so font metrics are updated
-    (redisplay t))
-  ;; Call the original writeroom-mode function
-  (apply orig-fun args)
-  ;; Fix width calculation after writeroom runs
-  (when (and writeroom-mode (derived-mode-p 'org-mode))
-    (setq-local visual-fill-column-width 80)
-    (setq-local visual-fill-column-extra-text-width '(0 . 0))
-    (setq-local visual-fill-column-center-text t)
-    (visual-fill-column-mode -1)
-    (visual-fill-column-mode 1)))
-
-(advice-add 'writeroom-mode :around #'my/set-zen-font-before-writeroom)
-
-;; Customize zen mode appearance
-(add-hook 'writeroom-mode-hook
-          (lambda ()
-            (if writeroom-mode
-                ;; Hide line numbers in zen mode
-                (display-line-numbers-mode -1)
-              ;; Restore when exiting zen mode
-              (display-line-numbers-mode 1)
-              (buffer-face-mode -1)
-              (setq-local face-remapping-alist nil))))
-
-;; Auto-enable zen mode for TTRPG org-roam notes
-(add-hook 'org-mode-hook
-          (lambda ()
-            (when (and (buffer-file-name)
-                       (string-match-p "/ttrpg/" (buffer-file-name))
-                       (not writeroom-mode))
-              (writeroom-mode 1))))
-#+end_src
-
-** Prettier UI Elements
-Modern styling for org-mode elements using org-modern and org-superstar.
-
-#+begin_src emacs-lisp
-;; Decluttering & Text Prettification
-(after! org
-  (setq org-adapt-indentation t
-        org-hide-leading-stars t
-        org-hide-emphasis-markers t
-        org-pretty-entities t
-        org-pretty-entities-include-sub-superscripts t
-        org-ellipsis "  ·"
-        org-src-fontify-natively t
-        org-src-tab-acts-natively t
-        org-edit-src-content-indentation 0
-        ;; LaTeX preview settings
-        org-highlight-latex-and-related '(native latex entities)
-        org-latex-create-formula-image-program 'dvipng
-        org-preview-latex-default-process 'dvipng
-        org-format-latex-options (plist-put org-format-latex-options :scale 1.5)))
-
-;; Visual line mode for better text wrapping
-(add-hook 'org-mode-hook 'visual-line-mode)
-
-;; Resize Org headings - using JetBrains Mono to maintain font consistency
-(after! org
-  (dolist (face '((org-level-1 . 1.35)
-                  (org-level-2 . 1.3)
-                  (org-level-3 . 1.2)
-                  (org-level-4 . 1.1)
-                  (org-level-5 . 1.1)
-                  (org-level-6 . 1.1)
-                  (org-level-7 . 1.1)
-                  (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "JetBrainsMono Nerd Font" :weight 'bold :height (cdr face)))
-
-  ;; Make the document title bigger
-  (set-face-attribute 'org-document-title nil :font "JetBrainsMono Nerd Font" :weight 'bold :height 1.8))
-
-;; Ensure some parts always use fixed-pitch (monospace)
-(custom-theme-set-faces
- 'user
- '(org-block ((t (:inherit fixed-pitch))))
- '(org-code ((t (:inherit (shadow fixed-pitch)))))
- '(org-indent ((t (:inherit (org-hide fixed-pitch)))))
- '(org-verbatim ((t (:inherit (shadow fixed-pitch)))))
- '(org-special-keyword ((t (:inherit (font-lock-comment-face fixed-pitch)))))
- '(org-meta-line ((t (:inherit (font-lock-comment-face fixed-pitch)))))
- '(org-checkbox ((t (:inherit fixed-pitch)))))
-
-;; org-modern customization (loaded by Doom's +pretty flag)
-(after! org-modern
-  (setq org-auto-align-tags t
-        org-tags-column 0
-        org-fold-catch-invisible-edits 'show-and-error
-        org-special-ctrl-a/e t
-        org-insert-heading-respect-content t
-        ;; org-modern: disable star styling (let org-superstar handle it)
-        org-modern-star nil
-        ;; Agenda styling
-        org-agenda-tags-column 0
-        org-agenda-block-separator ?─
-        org-agenda-time-grid '((daily today require-timed)
-                               (800 1000 1200 1400 1600 1800 2000)
-                               " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
-        org-agenda-current-time-string "⭠ now ─────────────────────────────────────────────────")
-  ;; Let Doom's pretty.el handle org-modern-todo/priority/tag-faces
-  ;; It automatically processes org-todo-keyword-faces and org-priority-faces
-  )
-
-;; org-superstar - Better heading bullets and TODO items
-(use-package! org-superstar
-  :after org
-  :config
-  (setq org-superstar-leading-bullet " "
-        org-superstar-special-todo-items t
-        org-superstar-todo-bullet-alist '(("TODO" . 9744)
-                                          ("DONE" . 9744)
-                                          ("READ" . 9744)
-                                          ("IDEA" . 9744)
-                                          ("WAITING" . 9744)
-                                          ("CANCELLED" . 9744)
-                                          ("PROJECT" . 9744)
-                                          ("POSTPONED" . 9744)))
-  (add-hook 'org-mode-hook 'org-superstar-mode))
-
-;; Custom TODO keywords and colors using Doom theme
-(after! org
-  ;; Define TODO keywords sequence FIRST
-  (setq org-todo-keywords
-        '((sequence
-           "TODO(t)" "PROJ(p)" "READ(r)" "CHECK(c)" "IDEA(i)" "WAITING(w)"
-           "|"
-           "DONE(d)" "CANCELLED(k)" "POSTPONED(s)"))))
-
-;; Set TODO keywords and priorities with Catppuccin Mocha colors directly
-(after! org
-  ;; Priority settings
-  (setq org-lowest-priority ?F
-        org-default-priority ?E)
-
-  ;; Set org-todo-keyword-faces with Catppuccin Mocha colors
-  ;; Swapped fg/bg because org-modern adds :inverse-video t
-  (setq org-todo-keyword-faces
-        '(("TODO"      . (:foreground "#a6e3a1" :background "#1e1e2e" :weight bold))  ; Green
-          ("PROJ"      . (:foreground "#89dceb" :background "#1e1e2e" :weight bold))  ; Sky
-          ("READ"      . (:foreground "#89b4fa" :background "#1e1e2e" :weight bold))  ; Blue
-          ("CHECK"     . (:foreground "#f9e2af" :background "#1e1e2e" :weight bold))  ; Yellow
-          ("IDEA"      . (:foreground "#f5c2e7" :background "#1e1e2e" :weight bold))  ; Pink
-          ("WAITING"   . (:foreground "#fab387" :background "#1e1e2e" :weight bold))  ; Peach
-          ("DONE"      . (:foreground "#6c7086" :background "#1e1e2e" :weight bold))  ; Surface2
-          ("CANCELLED" . (:foreground "#585b70" :background "#1e1e2e" :weight bold))  ; Surface1
-          ("POSTPONED" . (:foreground "#45475a" :background "#1e1e2e" :weight bold)))) ; Surface0
-
-  ;; Set org-priority-faces with Catppuccin Mocha colors
-  ;; Swapped fg/bg because org-modern adds :inverse-video t
-  ;; A (highest) = Red, B = Peach, C = Yellow, D = Green, E = Blue, F (lowest) = Surface
-  (setq org-priority-faces
-        '((?A . (:foreground "#f38ba8" :background "#1e1e2e" :weight bold))  ; Red - Highest
-          (?B . (:foreground "#fab387" :background "#1e1e2e" :weight bold))  ; Peach
-          (?C . (:foreground "#f9e2af" :background "#1e1e2e" :weight bold))  ; Yellow
-          (?D . (:foreground "#a6e3a1" :background "#1e1e2e" :weight bold))  ; Green
-          (?E . (:foreground "#89b4fa" :background "#1e1e2e" :weight bold))  ; Blue
-          (?F . (:foreground "#6c7086" :background "#1e1e2e" :weight bold)))) ; Surface - Lowest
-)
-#+end_src
