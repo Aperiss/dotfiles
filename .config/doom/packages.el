@@ -10,8 +10,19 @@
 ;; Theme
 (package! catppuccin-theme)
 
+;; Disable solaire-mode - it remaps faces and causes font issues
+(package! solaire-mode :disable t)
+
 ;; Python LSP
 (package! lsp-pyright)
 
 ;; Org-roam UI - interactive graph in browser
 (package! org-roam-ui)
+
+;; Additional packages
+(package! org-ql)                    ;; Advanced queries for filtering notes
+(package! org-super-agenda)          ;; Group todos by tag
+(package! org-transclusion)          ;; Embed note content in other notes
+
+;; Prettier UI elements for org-mode
+(package! org-superstar)             ;; Better heading bullets and TODO items
