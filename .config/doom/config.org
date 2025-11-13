@@ -1127,6 +1127,20 @@ Organized structure for tabletop RPG content (in sort order):
 - =4_other/= - GM tips, generators, ideas, misc
 - =z_meta/= - Shared templates and general GM resources
 
+*** Auto Zen Mode for TTRPG
+Automatically enable zen mode when opening files in the TTRPG org-roam directory.
+
+#+begin_src emacs-lisp
+(defun my/auto-zen-for-ttrpg ()
+  "Automatically enable zen mode for files in ttrpg org-roam directory."
+  (when (and (buffer-file-name)
+             (string-match-p (expand-file-name "~/Org/org-roam/ttrpg/") (buffer-file-name))
+             (not writeroom-mode))
+    (writeroom-mode 1)))
+
+(add-hook 'org-mode-hook #'my/auto-zen-for-ttrpg)
+#+end_src
+
 *** Context Management System
 Context variables to remember current working world/adventure/system during a session.
 Set once, create many notes without repeated prompts.
